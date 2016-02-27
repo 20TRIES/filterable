@@ -9,7 +9,7 @@
     "require": {
         "php" : ">=5.6",
         "nesbot/carbon": "1.*",
-        "20tries/date_range": "dev-master",
+        "20tries/date_range": "0.0.*",
         "illuminate/support": "5.2.*",
         "illuminate/contracts": "5.2.*",
         "illuminate/http": "5.2.*"
