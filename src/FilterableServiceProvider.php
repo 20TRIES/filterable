@@ -11,7 +11,8 @@ class FilterableServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->loadViewsFrom('src/resources/views', 'filterable');
+
+        $this->loadViewsFrom(__DIR__.'/resources/views', 'filterable');
     }
 
     /**
