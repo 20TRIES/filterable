@@ -1,11 +1,12 @@
-<?php namespace _20TRIES\Filterable;
+<?php
+
+namespace _20TRIES\Filterable;
 
 use Illuminate\Support\Collection;
 
 /**
  * A collection of filters.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 class FilterCollection extends Collection
@@ -32,7 +33,8 @@ class FilterCollection extends Collection
     /**
      * Get the items in the collection whose keys are not present in the given items.
      *
-     * @param  mixed  $items
+     * @param mixed $items
+     *
      * @return static
      */
     public function diffKeys($items)
@@ -47,7 +49,7 @@ class FilterCollection extends Collection
      */
     public function dateFilters()
     {
-        return $this->filter(function($filter) {
+        return $this->filter(function ($filter) {
             return $filter->getGroup() === 'Dates';
         });
     }
@@ -59,7 +61,7 @@ class FilterCollection extends Collection
      */
     public function hasDateFilter()
     {
-        return !is_null($this->first(function($key, $filter) {
+        return !is_null($this->first(function ($key, $filter) {
             return $filter->getGroup() === 'Dates';
         }));
     }

@@ -1,13 +1,14 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
 
-use _20TRIES\Filterable\Filterable;
+namespace _20TRIES\Filterable\Filters;
+
 use _20TRIES\DateRange;
+use _20TRIES\Filterable\Filterable;
 
 /**
  * A filter that can be used with the Filterable trait to filter query results using the input
  * from a specialised combination of select boxes that allow a user to build a date range.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 class DateRangeSelectFilter extends SelectFilter
@@ -40,7 +41,7 @@ class DateRangeSelectFilter extends SelectFilter
                 'Previous Month' => DateRange::lastMonth()->toInclusiveString(Filterable::$date_format, ' - '),
                 'Current Year'   => DateRange::thisYear()->toInclusiveString(Filterable::$date_format, ' - '),
                 'Previous Year'  => DateRange::lastYear()->toInclusiveString(Filterable::$date_format, ' - '),
-            ]
+            ],
         ];
     }
 }

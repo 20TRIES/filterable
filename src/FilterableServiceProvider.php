@@ -1,4 +1,6 @@
-<?php namespace _20TRIES\Filterable;
+<?php
+
+namespace _20TRIES\Filterable;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -11,7 +13,6 @@ class FilterableServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-
         $this->loadViewsFrom(__DIR__.'/resources/views', 'filterable');
     }
 

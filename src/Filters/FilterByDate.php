@@ -1,20 +1,22 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
 
-use _20TRIES\Filterable\Filterable;
+namespace _20TRIES\Filterable\Filters;
+
 use _20TRIES\DateRange;
+use _20TRIES\Filterable\Filterable;
 use Carbon\Carbon;
 
 /**
  * Trait that enables filtering by dates.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 trait FilterByDate
 {
     /**
-     * @return array Mutates the filter values so that it is readily prepared for processing.
      * @throws \Exception
+     *
+     * @return array Mutates the filter values so that it is readily prepared for processing.
      */
     public function getMutatedValues()
     {
@@ -22,21 +24,20 @@ trait FilterByDate
 
         $dates = explode(' - ', last($this->values));
 
-        switch ($operator)
-        {
-            case "before":
+        switch ($operator) {
+            case 'before':
                 $values = [DateRange::before(Carbon::createFromFormat(Filterable::$date_format, head($dates), 'GB')->startOfDay())];
                 break;
-            case "not_in":
+            case 'not_in':
                 $values = [new DateRange(
                     Carbon::createFromFormat(Filterable::$date_format, last($dates), 'GB')->addDay()->startOfDay(),
                     Carbon::createFromFormat(Filterable::$date_format, head($dates), 'GB')->subDay()->endOfDay()
                 )];
                 break;
-            case "after":
+            case 'after':
                 $values = [DateRange::after(Carbon::createFromFormat(Filterable::$date_format, last($dates), 'GB')->endOfDay())];
                 break;
-            case "in":
+            case 'in':
             default:
                 $values = [new DateRange(
                     Carbon::createFromFormat(Filterable::$date_format, head($dates), 'GB')->subDay()->endOfDay(),
@@ -54,8 +55,7 @@ trait FilterByDate
     {
         $data['date'] = last($this->values);
 
-        if(count($this->values) > 1)
-        {
+        if (count($this->values) > 1) {
             $data['operator'] = head($this->values);
         }
 

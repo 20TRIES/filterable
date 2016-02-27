@@ -1,5 +1,6 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
 
+namespace _20TRIES\Filterable\Filters;
 
 class DateFilter extends Filter
 {
@@ -30,21 +31,20 @@ class DateFilter extends Filter
 
         $dates = explode(' - ', last($this->values));
 
-        switch ($operator)
-        {
-            case "before":
+        switch ($operator) {
+            case 'before':
                 return [DateRange::before(Carbon::createFromFormat(Filterable::$date_format, head($dates), 'GB')->startOfDay())];
-            case "in":
+            case 'in':
                 return [new DateRange(
                     Carbon::createFromFormat(Filterable::$date_format, head($dates), 'GB')->subDay()->endOfDay(),
                     Carbon::createFromFormat(Filterable::$date_format, last($dates), 'GB')->addDay()->startOfDay()
                 )];
-            case "not_in":
+            case 'not_in':
                 return [new DateRange(
                     Carbon::createFromFormat(Filterable::$date_format, last($dates), 'GB')->addDay()->startOfDay(),
                     Carbon::createFromFormat(Filterable::$date_format, head($dates), 'GB')->subDay()->endOfDay()
                 )];
-            case "after":
+            case 'after':
                 return [DateRange::after(Carbon::createFromFormat(Filterable::$date_format, last($dates), 'GB')->endOfDay())];
         }
     }

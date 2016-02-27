@@ -1,9 +1,10 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
+
+namespace _20TRIES\Filterable\Filters;
 
 /**
  * A filter class that allows the filtering of results by a specific month.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 class MonthPickerFilter extends Filter
