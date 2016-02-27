@@ -1,10 +1,11 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
+
+namespace _20TRIES\Filterable\Filters;
 
 /**
  * A filter that can be used with the Filterable trait to filter query results using the input
  * from a select box(es).
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 class BasicSelectFilter extends SelectFilter
@@ -28,6 +29,7 @@ class BasicSelectFilter extends SelectFilter
      * Sets the options/option sets for a filter.
      *
      * @param ...$args
+     *
      * @return $this
      */
     public function withOptions($set_name, $options)
@@ -44,10 +46,8 @@ class BasicSelectFilter extends SelectFilter
     {
         $values = $this->values;
 
-        foreach($this->values AS $key => $value)
-        {
-            if($value === 'null')
-            {
+        foreach ($this->values as $key => $value) {
+            if ($value === 'null') {
                 $values[$key] = null;
             }
         }
@@ -64,10 +64,10 @@ class BasicSelectFilter extends SelectFilter
     {
         return \Validator::make(['option' => head($this->values)],
             [
-                'option' => 'required|in:' . implode(',', head($this->getOptions())),
+                'option' => 'required|in:'.implode(',', head($this->getOptions())),
             ],
             [
-                'option.in' => 'Unrecognised filter option selected.'
+                'option.in' => 'Unrecognised filter option selected.',
             ]
         );
     }
@@ -77,8 +77,7 @@ class BasicSelectFilter extends SelectFilter
      */
     public function withNoneOption()
     {
-        foreach($this->options AS $key => $option_set)
-        {
+        foreach ($this->options as $key => $option_set) {
             $this->options[$key] = array_merge(['None' => 'null'], $this->options[$key]);
         }
 

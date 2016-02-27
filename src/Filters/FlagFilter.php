@@ -1,10 +1,11 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
+
+namespace _20TRIES\Filterable\Filters;
 
 /**
  * A filter that can be used with the Filterable trait to filter query results based on the presence
  * of a flag filter.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 class FlagFilter extends Filter
@@ -50,7 +51,6 @@ class FlagFilter extends Filter
      */
     public function validate()
     {
-        return null;
+        return;
     }
-
 }

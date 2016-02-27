@@ -1,10 +1,11 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
+
+namespace _20TRIES\Filterable\Filters;
 
 /**
  * A filter that can be used with the Filterable trait to filter query results using the input
  * from a / multiple select boxes.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 abstract class SelectFilter extends Filter
@@ -12,7 +13,7 @@ abstract class SelectFilter extends Filter
     /**
      * @inherit
      */
-    protected $type  = 'select';
+    protected $type = 'select';
 
     /**
      * @return mixed
@@ -29,12 +30,10 @@ abstract class SelectFilter extends Filter
     {
         $data = parent::toArray();
 
-        if( ! empty($this->getOptions()) && $this->type === 'select')
-        {
+        if (!empty($this->getOptions()) && $this->type === 'select') {
             $options = [];
 
-            foreach ($this->getOptions() AS $key => $value)
-            {
+            foreach ($this->getOptions() as $key => $value) {
                 $options[] = [$key => $value];
             }
         }

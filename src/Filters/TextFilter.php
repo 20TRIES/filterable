@@ -1,10 +1,11 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
+
+namespace _20TRIES\Filterable\Filters;
 
 /**
  * A filter that can be used with the Filterable trait to filter query results with a text input
  * from the user.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 class TextFilter extends Filter
@@ -42,6 +43,6 @@ class TextFilter extends Filter
      */
     public function validate()
     {
-        return null;
+        return;
     }
 }

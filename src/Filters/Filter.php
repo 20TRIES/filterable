@@ -1,4 +1,6 @@
-<?php namespace _20TRIES\Filterable\Filters;
+<?php
+
+namespace _20TRIES\Filterable\Filters;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
@@ -6,7 +8,6 @@ use Illuminate\Contracts\Support\Jsonable;
 /**
  * A filter that can be used with the Filterable trait to filter query results.
  *
- * @package _20TRIES\Filterable
  * @since 0.0.1
  */
 abstract class Filter implements Arrayable, Jsonable
@@ -18,7 +19,7 @@ abstract class Filter implements Arrayable, Jsonable
 
     /**
      * @var bool A flag that indicates that the filter should be read only; if this is set then there
-     * should usually be values set that will be displayed to the user.
+     *           should usually be values set that will be displayed to the user.
      */
     protected $readonly = false;
 
@@ -97,19 +98,18 @@ abstract class Filter implements Arrayable, Jsonable
 
     /**
      * @param array $values
+     *
      * @return $this
      */
     public function setValues(array $values)
     {
-        $this->values = collect($values)->filter(function($value)
-        {
+        $this->values = collect($values)->filter(function ($value) {
             return $value !== '';
 
         })->all();
 
         return $this;
     }
-
 
     /**
      * @return bool
@@ -123,6 +123,7 @@ abstract class Filter implements Arrayable, Jsonable
      * Creates a new filter on a model class method.
      *
      * @param $method
+     *
      * @return static
      */
     public static function on($method)
@@ -140,6 +141,7 @@ abstract class Filter implements Arrayable, Jsonable
      * Sets the name of a filter.
      *
      * @param string $name
+     *
      * @return $this
      */
     public function withName($name)
@@ -153,6 +155,7 @@ abstract class Filter implements Arrayable, Jsonable
      * Sets the group for a filter.
      *
      * @param string $group
+     *
      * @return $this
      */
     public function withGroup($group)
@@ -165,11 +168,11 @@ abstract class Filter implements Arrayable, Jsonable
     /**
      * @return string Gets the filter type; for example: "text", "select", "date_range_picker".
      */
-    public abstract function getType();
+    abstract public function getType();
 
     /**
      * @return string Gets the grouping that should be used wherever the filters a grouped together; for example,
-     * when applying OptGroups in a select menu.
+     *                when applying OptGroups in a select menu.
      */
     public function getGroup()
     {
@@ -181,12 +184,12 @@ abstract class Filter implements Arrayable, Jsonable
      *
      * @return array
      */
-    public abstract function getOptions();
+    abstract public function getOptions();
 
     /**
      * @return array Mutates the filter values so that it is readily prepared for processing.
      */
-    public abstract function getMutatedValues();
+    abstract public function getMutatedValues();
 
     /**
      * Mutates the current filter values and sets them to the mutated values.
@@ -201,7 +204,7 @@ abstract class Filter implements Arrayable, Jsonable
     /**
      * @return \Validator Returns a validator for the filter.
      */
-    public abstract function validate();
+    abstract public function validate();
 
     /**
      * @return \Illuminate\Support\Collection
