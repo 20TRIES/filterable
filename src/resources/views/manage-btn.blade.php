@@ -142,7 +142,7 @@
 
 <style>
     .datepicker-dropdown {
-        z-index: 2400 !important;
+        z-index: 2400;
     }
 </style>
 
