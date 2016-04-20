@@ -51,6 +51,5 @@ class FlagFilter extends Filter
      */
     public function validate()
     {
-        return;
     }
 }

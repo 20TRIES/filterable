@@ -43,6 +43,5 @@ class TextFilter extends Filter
      */
     public function validate()
     {
-        return;
     }
 }

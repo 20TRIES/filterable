@@ -5,7 +5,9 @@ namespace _20TRIES\Filterable;
 use _20TRIES\DateRange;
 use _20TRIES\Filterable\Exceptions\FilterValidationException;
 use _20TRIES\Filterable\Filters\Filter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 
 /**
  * A trait that includes teh necessary implementation for making a controllers index action
@@ -68,36 +70,83 @@ trait Filterable
     protected $active_collections = [];
 
     /**
+     * @var array An array of relations that are loaded by the class.
+     */
+    protected $load = [];
+
+//    protected $offset = 0; // @TODO Add support for option
+//
+//    protected $limit = 15; // @TODO Add support for option
+//
+//    protected $order_by = 0; // @TODO Add support for option
+//
+//    protected $order_direction = 'asc'; // @TODO Add support for option
+//
+//    protected $fields = []; // @TODO Add support for option
+
+    /**
      * Registers a group of filters.
      *
-     * @param ...$args
+     * @param array ...$args
      *
-     * @return static
+     * @return $this
      */
     public function registerFilters(...$args)
     {
         $this->available_filters = (new FilterCollection($args))->keyBy(function ($item) {
             return $item->getName();
         });
-
         return $this;
+    }
+
+    /**
+     * Gets the input for the current request.
+     */
+    public function getInput()
+    {
+        return request()->all();
+    }
+
+    /**
+     * @return array An array of relationships that should be loaded when building a query.
+     */
+    public function shouldLoad()
+    {
+        return $this->load;
     }
 
     /**
      * Gets the filters from the current requests and performs and parsing required.
      *
-     * @param array $filters
-     * @param array $collections
-     *
-     * @throws FilterValidationException
+     * @param array $options
      */
-    public function initialiseFilters(array $filters, array $collections = [])
+    public function initialiseFilters($options = [])
     {
+        $resolve_input = Arr::get($options, 'resolve_input', true);
+
+        // Process collections
         $this->setAvailableCollections();
+
+        $collections = Arr::get($options, 'collections', []);
+
+        if ($resolve_input === true) {
+            $input_collections = Arr::get($this->getInput(), 'collections', []);
+
+            $collections = array_merge($input_collections, $collections);
+        }
 
         $this->parseFilterCollections($collections);
 
-        foreach ($filters as $item => $value) {
+        // Process filters
+        $filters = Arr::get($options, 'filters', []);
+
+        if ($resolve_input === true) {
+            $input_filters = Arr::get($this->getInput(), 'filters', []);
+
+            $filters = array_merge($input_filters, $filters);
+        }
+
+        foreach ($filters AS $item => $value) {
             if (isset($this->available_filters[$item])) {
                 $filter = &$this->available_filters[$item];
 
@@ -110,32 +159,47 @@ trait Filterable
                 $this->activateFilter($item, $filter);
             }
         }
+
+        // Share properties
+        $share_properties = Arr::get($options, 'share_properties', true);
+
+        if ($share_properties == true) {
+            $this->registerSharedVariables();
+        }
+
+        // Now we will process the relations that should be loaded.
+        $load = Arr::get($options, 'load', []);
+
+        if ($resolve_input === true) {
+            $input_loads = Arr::get($this->getInput(), 'load', []);
+            $load = array_merge($input_loads, $load);
+        }
+        $this->load = $load;
     }
 
     /**
      * Builds the query from the active filters.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param bool|true                             $register_shared_vars
+     * @param Builder $query
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
-    public function buildQuery($query, $register_shared_vars = true)
+    public function buildQuery($query)
     {
         $filters = $this->optimizeFilters();
 
-        if (!empty($filters)) {
-            foreach ($filters as $name => $filter) {
-                $method = $filter->getMethod();
+        // Process each filter
+        foreach ($filters as $name => $filter) {
+            $method = $filter->getMethod();
 
-                $args = $filter->getMutatedValues();
+            $args = $filter->getMutatedValues();
 
-                $query->$method(...$args);
-            }
+            $query = $query->$method(...$args);
         }
 
-        if ($register_shared_vars == true) {
-            $this->registerSharedVariables();
+        // Load requested relations
+        if (!empty($this->load)) {
+            $query = $query->with($this->load);
         }
 
         return $query;
@@ -215,7 +279,7 @@ trait Filterable
      */
     protected function activateFilters($filters)
     {
-        foreach ($filters as $filter => $data) {
+        foreach ($filters AS $filter => $data) {
             $this->activateFilter($filter, $data);
         }
     }
