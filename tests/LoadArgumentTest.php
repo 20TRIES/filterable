@@ -12,61 +12,41 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class LoadArgumentTest extends \PHPUnit_Framework_TestCase
 {
-    public function test_load_argument_is_correctly_interpreted() {
-        $controller = new TestControllerOne();
-        $controller->index();
-        $this->assertEquals(['relationOne', 'relationTwo', 'relationThree'], $controller->shouldLoad());
+    public function test_load_argument_is_correctly_interpreted()
+    {
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['getInput', 'registerSharedVariables'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn([
+            'load' => ['relationOne', 'relationTwo', 'relationThree'],
+        ]);
+
+        $mock->initialiseFilters();
+
+        $this->assertEquals(['relationOne', 'relationTwo', 'relationThree'], $mock->shouldLoad());
     }
 
-    public function test_loads_are_passed_to_builder() {
-        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+    public function test_loads_are_passed_to_builder()
+    {
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['getInput', 'registerSharedVariables'])
+            ->getMockForTrait();
 
-        $controller = new TestControllerTwo();
+        $mock->expects($this->any())->method('getInput')->willReturn([
+            'load' => ['relationOne', 'relationTwo', 'relationThree'],
+        ]);
+
+        $mock_query = $this->getMock(Builder::class, [], [], '', false);
 
         $mock_query
             ->expects($this->once())
             ->method('with')
             ->with($this->equalTo(['relationOne', 'relationTwo', 'relationThree']));
 
-        $controller->index($mock_query);
+        $mock->initialiseFilters();
+        $mock->buildQuery($mock_query);
     }
 }
-
-class TestControllerOne {
-    use Filterable;
-
-    protected $func;
-
-    public function index() {
-        $this->initialiseFilters();
-    }
-
-    public function getInput() {
-        return  ['load' => ['relationOne', 'relationTwo', 'relationThree']];
-    }
-
-    public function registerSharedVariables() {
-    }
-};
-
-class TestControllerTwo {
-
-    use Filterable;
-
-    protected $func;
-
-    public function index($query)
-    {
-        $this->initialiseFilters();
-        $this->buildQuery($query);
-    }
-
-    public function getInput()
-    {
-        return  ['load' => ['relationOne', 'relationTwo', 'relationThree']];
-    }
-
-    public function registerSharedVariables()
-    {
-    }
-};

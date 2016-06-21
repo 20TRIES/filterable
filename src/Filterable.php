@@ -8,6 +8,7 @@ use _20TRIES\Filterable\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Input;
 
 /**
  * A trait that includes teh necessary implementation for making a controllers index action
@@ -74,10 +75,21 @@ trait Filterable
      */
     protected $load = [];
 
-//    protected $offset = 0; // @TODO Add support for option
-//
-//    protected $limit = 15; // @TODO Add support for option
-//
+    /**
+     * @var array The number of results that should be returned.
+     */
+    protected $limit = 15;
+
+    /**
+     * @var array The maximum number of results that can be returned.
+     */
+    protected $limit_min = 0;
+
+    /**
+     * @var array The minimum number of results that can be returned.
+     */
+    protected $limit_max = 100;
+
 //    protected $order_by = 0; // @TODO Add support for option
 //
 //    protected $order_direction = 'asc'; // @TODO Add support for option
@@ -96,15 +108,8 @@ trait Filterable
         $this->available_filters = (new FilterCollection($args))->keyBy(function ($item) {
             return $item->getName();
         });
-        return $this;
-    }
 
-    /**
-     * Gets the input for the current request.
-     */
-    public function getInput()
-    {
-        return request()->all();
+        return $this;
     }
 
     /**
@@ -113,6 +118,36 @@ trait Filterable
     public function shouldLoad()
     {
         return $this->load;
+    }
+
+    /**
+     * Gets the number of results that should be returned by any query.
+     *
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    /**
+     * Gets the minimum number of results that a query can return.
+     *
+     * @return int
+     */
+    public function getLimitMin()
+    {
+        return $this->limit_min;
+    }
+
+    /**
+     * Gets the maximum number of results that a query can return.
+     *
+     * @return int
+     */
+    public function getLimitMax()
+    {
+        return $this->limit_max;
     }
 
     /**
@@ -130,23 +165,19 @@ trait Filterable
         $collections = Arr::get($options, 'collections', []);
 
         if ($resolve_input === true) {
-            $input_collections = Arr::get($this->getInput(), 'collections', []);
-
-            $collections = array_merge($input_collections, $collections);
+            $collections = array_merge($this->resolveCollections(), $collections);
         }
 
         $this->parseFilterCollections($collections);
 
-        // Process filters
+        // Process Filters
         $filters = Arr::get($options, 'filters', []);
 
         if ($resolve_input === true) {
-            $input_filters = Arr::get($this->getInput(), 'filters', []);
-
-            $filters = array_merge($input_filters, $filters);
+            $filters = array_merge($this->resolveFilters(), $filters);
         }
 
-        foreach ($filters AS $item => $value) {
+        foreach ($filters as $item => $value) {
             if (isset($this->available_filters[$item])) {
                 $filter = &$this->available_filters[$item];
 
@@ -160,21 +191,74 @@ trait Filterable
             }
         }
 
+        // Process Loads
+        $this->load = Arr::get($options, 'load', []);
+
+        if ($resolve_input === true) {
+            $this->load = array_merge($this->resolveLoads(), $collections);
+        }
+
+        // Setup Pagination
+        $this->setupPagination(array_only($options, ['limit', 'limit_min', 'limit_max']));
+
         // Share properties
         $share_properties = Arr::get($options, 'share_properties', true);
 
         if ($share_properties == true) {
             $this->registerSharedVariables();
         }
+    }
 
-        // Now we will process the relations that should be loaded.
-        $load = Arr::get($options, 'load', []);
+    /**
+     * Gets the input for the current request.
+     *
+     * @return array
+     */
+    protected function getInput()
+    {
+        return Input::all();
+    }
 
-        if ($resolve_input === true) {
-            $input_loads = Arr::get($this->getInput(), 'load', []);
-            $load = array_merge($input_loads, $load);
-        }
-        $this->load = $load;
+    /**
+     * Resolves any collections requested via input in the current request.
+     *
+     * @return array
+     */
+    protected function resolveCollections()
+    {
+        return Arr::get($this->getInput(), 'collections', []);
+    }
+
+    /**
+     * Resolves any filters requested via input in the current request.
+     *
+     * @return array
+     */
+    protected function resolveFilters()
+    {
+        return Arr::get($this->getInput(), 'filters', []);
+    }
+
+    /**
+     * Resolves any relations requested to be loaded via input in the current request.
+     *
+     * @return array
+     */
+    protected function resolveLoads()
+    {
+        return Arr::get($this->getInput(), 'load', []);
+    }
+
+    /**
+     * Setup pagination.
+     *
+     * @param $options
+     */
+    protected function setupPagination($options)
+    {
+        $this->limit = Arr::get($options, 'limit', 15);
+        $this->limit_min = Arr::get($options, 'limit_min', 0);
+        $this->limit_max = Arr::get($options, 'limit_max', 100);
     }
 
     /**
@@ -196,6 +280,15 @@ trait Filterable
 
             $query = $query->$method(...$args);
         }
+
+        // Apply pagination
+        $limit = $this->getLimit();
+        $limit = $limit > $this->getLimitMax() ? $this->getLimitMax() : $limit;
+        $limit = $limit < $this->getLimitMin() ? $this->getLimitMin() : $limit;
+
+        $query->simplePaginate($limit);
+
+        $query->appends(array_except($this->getInput(), ['page']));
 
         // Load requested relations
         if (!empty($this->load)) {
@@ -279,7 +372,7 @@ trait Filterable
      */
     protected function activateFilters($filters)
     {
-        foreach ($filters AS $filter => $data) {
+        foreach ($filters as $filter => $data) {
             $this->activateFilter($filter, $data);
         }
     }
