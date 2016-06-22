@@ -201,7 +201,12 @@ trait Filterable
         }
 
         // Setup Pagination
-        $this->setupPagination(array_only($options, ['limit', 'limit_min', 'limit_max']));
+        $pagination_options = [
+            'limit'     => Arr::get($options, 'limit', $resolve_input === true ? $this->resolveLimit() : $this->getLimit()),
+            'limit_min' => Arr::get($options, 'limit_min', $this->getLimitMin()),
+            'limit_max' => Arr::get($options, 'limit_max', $this->getLimitMax()),
+        ];
+        $this->setupPagination($pagination_options);
 
         // Share properties
         $share_properties = Arr::get($options, 'share_properties', true);
@@ -249,6 +254,17 @@ trait Filterable
     protected function resolveLoads()
     {
         return Arr::get($this->getInput(), 'load', []);
+    }
+
+    /**
+     * Resolves the number of records that should be loaded from input in the current request.
+     *
+     * @return int
+     */
+    protected function resolveLimit()
+    {
+        $limit = Arr::get($this->getInput(), 'limit', false);
+        return (int) ($limit === false ? $this->getLimit() : $limit);
     }
 
     /**

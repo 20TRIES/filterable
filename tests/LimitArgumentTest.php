@@ -47,7 +47,57 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
         $mock->buildQuery($mock_query);
     }
 
-    public function test_limit_is_overridden_by_limit_option_passed_to_initilise_filters()
+    public function test_limit_is_resolved_from_input_if_no_limit_option_is_passed()
+    {
+        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, [], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['registerSharedVariables', 'getInput'])
+            ->getMockForTrait();
+
+        $expected = 30;
+
+        $mock->expects($this->any())->method('getInput')->willReturn(['limit' => $expected]);
+
+        $mock_query
+            ->expects($this->once())
+            ->method('simplePaginate')
+            ->with($this->equalTo($expected))
+            ->willReturn($mock_paginator);
+
+        $mock->initialiseFilters();
+        $mock->buildQuery($mock_query);
+    }
+
+    public function test_limit_option_overrides_input()
+    {
+        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, [], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['registerSharedVariables', 'getInput'])
+            ->getMockForTrait();
+
+        $expected = 30;
+
+        $mock->expects($this->any())->method('getInput')->willReturn(['limit' => 99]);
+
+        $mock_query
+            ->expects($this->once())
+            ->method('simplePaginate')
+            ->with($this->equalTo($expected))
+            ->willReturn($mock_paginator);
+
+        $mock->initialiseFilters(['limit' => $expected]);
+        $mock->buildQuery($mock_query);
+    }
+
+    public function test_default_limit_is_overridden_by_limit_option_passed_to_initilise_filters()
     {
         $mock_query = $this->getMock(Builder::class, [], [], '', false);
 
