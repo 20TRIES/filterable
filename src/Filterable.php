@@ -7,7 +7,9 @@ use _20TRIES\Filterable\Exceptions\FilterValidationException;
 use _20TRIES\Filterable\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Input;
 
 /**
@@ -266,7 +268,7 @@ trait Filterable
      *
      * @param Builder $query
      *
-     * @return Builder
+     * @return Paginator
      */
     public function buildQuery($query)
     {
@@ -281,21 +283,21 @@ trait Filterable
             $query = $query->$method(...$args);
         }
 
-        // Apply pagination
-        $limit = $this->getLimit();
-        $limit = $limit > $this->getLimitMax() ? $this->getLimitMax() : $limit;
-        $limit = $limit < $this->getLimitMin() ? $this->getLimitMin() : $limit;
-
-        $query->simplePaginate($limit);
-
-        $query->appends(array_except($this->getInput(), ['page']));
-
         // Load requested relations
         if (!empty($this->load)) {
             $query = $query->with($this->load);
         }
 
-        return $query;
+        // Apply pagination
+        $limit = $this->getLimit();
+        $limit = $limit > $this->getLimitMax() ? $this->getLimitMax() : $limit;
+        $limit = $limit < $this->getLimitMin() ? $this->getLimitMin() : $limit;
+
+        $paginator = $query->simplePaginate($limit);
+
+        $paginator = $paginator->appends(array_except($this->getInput(), ['page']));
+
+        return $paginator;
     }
 
     /**

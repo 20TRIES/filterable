@@ -4,6 +4,7 @@ namespace _20TRIES\Test;
 
 use _20TRIES\Filterable\Filterable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\Paginator;
 
 /**
  * A test quite for testing handling of the load attribute which can be passed to filterable in a request.
@@ -30,6 +31,10 @@ class LoadArgumentTest extends \PHPUnit_Framework_TestCase
 
     public function test_loads_are_passed_to_builder()
     {
+        $mock_query = $this->getMock(Builder::class, ['simplePaginate', 'with'], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, ['appends'], [], '', false);
+
         $mock = $this
             ->getMockBuilder(Filterable::class)
             ->setMethods(['getInput', 'registerSharedVariables'])
@@ -39,12 +44,14 @@ class LoadArgumentTest extends \PHPUnit_Framework_TestCase
             'load' => ['relationOne', 'relationTwo', 'relationThree'],
         ]);
 
-        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+        $mock_query->expects($this->any())->method('simplePaginate')->willReturn($mock_paginator);
+        $mock_paginator->expects($this->any())->method('appends')->willReturn($mock_paginator);
 
         $mock_query
             ->expects($this->once())
             ->method('with')
-            ->with($this->equalTo(['relationOne', 'relationTwo', 'relationThree']));
+            ->with($this->equalTo(['relationOne', 'relationTwo', 'relationThree']))
+            ->willReturnSelf();
 
         $mock->initialiseFilters();
         $mock->buildQuery($mock_query);
