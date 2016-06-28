@@ -33,7 +33,7 @@ class LoadArgumentTest extends \PHPUnit_Framework_TestCase
     {
         $mock_query = $this->getMock(Builder::class, ['simplePaginate', 'with'], [], '', false);
 
-        $mock_paginator = $this->getMock(Paginator::class, ['appends'], [], '', false);
+        $mock_paginator = $this->getMock(Paginator::class, ['appends', 'toArray'], [], '', false);
 
         $mock = $this
             ->getMockBuilder(Filterable::class)
@@ -45,7 +45,8 @@ class LoadArgumentTest extends \PHPUnit_Framework_TestCase
         ]);
 
         $mock_query->expects($this->any())->method('simplePaginate')->willReturn($mock_paginator);
-        $mock_paginator->expects($this->any())->method('appends')->willReturn($mock_paginator);
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+        $mock_paginator->expects($this->any())->method('toArray');
 
         $mock_query
             ->expects($this->once())

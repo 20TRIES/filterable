@@ -43,6 +43,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
 
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+
         $mock->initialiseFilters();
         $mock->buildQuery($mock_query);
     }
@@ -67,6 +69,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->method('simplePaginate')
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
+
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
 
         $mock->initialiseFilters();
         $mock->buildQuery($mock_query);
@@ -93,6 +97,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
 
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+
         $mock->initialiseFilters(['limit' => $expected]);
         $mock->buildQuery($mock_query);
     }
@@ -117,6 +123,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->method('simplePaginate')
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
+
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
 
         $mock->initialiseFilters(['limit' => $expected]);
         $mock->buildQuery($mock_query);
@@ -144,6 +152,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
 
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+
         $mock->initialiseFilters(['limit' => $input]);
         $mock->buildQuery($mock_query);
     }
@@ -169,6 +179,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->method('simplePaginate')
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
+
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
 
         $mock->initialiseFilters(['limit' => $input]);
         $mock->buildQuery($mock_query);
@@ -196,6 +208,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
 
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+
         $mock->initialiseFilters(['limit' => $input, 'limit_max' => $input]);
         $mock->buildQuery($mock_query);
     }
@@ -222,6 +236,8 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($expected))
             ->willReturn($mock_paginator);
 
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+
         $mock->initialiseFilters(['limit' => $input, 'limit_min' => $input]);
         $mock->buildQuery($mock_query);
     }
@@ -230,7 +246,7 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
     {
         $mock_query = $this->getMock(Builder::class, ['simplePaginate'], [], '', false);
 
-        $mock_paginator = $this->getMock(Paginator::class, ['appends'], [], '', false);
+        $mock_paginator = $this->getMock(Paginator::class, ['appends', 'toArray'], [], '', false);
 
         $mock = $this
             ->getMockBuilder(Filterable::class)
@@ -254,9 +270,131 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
 
         $mock_query->expects($this->any())->method('simplePaginate')->willReturn($mock_paginator);
 
-        $mock_paginator->expects($this->once())->method('appends')->with($expected);
+        $mock_paginator->expects($this->once())->method('appends')->with($expected)->willReturnSelf();
+
+        $mock_paginator->expects($this->any())->method('toArray');
 
         $mock->initialiseFilters([]);
         $mock->buildQuery($mock_query);
+    }
+
+    public function test_pagination_not_disableable_by_default()
+    {
+        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, [], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['registerSharedVariables', 'getInput'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn(['limit' => -1]);
+
+        $mock_query->expects($this->once())->method('simplePaginate')->willReturn($mock_paginator);
+
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+
+        $mock->initialiseFilters([]);
+        $mock->buildQuery($mock_query);
+    }
+
+    public function test_pagination_is_disabled_by_passing_negative_value_when_disabling_is_configured()
+    {
+        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, ['simplePaginate'], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['registerSharedVariables', 'getInput'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn(['limit' => -1]);
+
+        $mock_query->expects($this->once())->method('get')->willReturnSelf();
+
+        $mock_paginator->expects($this->never())->method('simplePaginate');
+
+        $mock->initialiseFilters(['limit_can_disable' => true]);
+        $mock->buildQuery($mock_query);
+    }
+
+    public function test_pagination_is_not_disabled_by_default_when_disabling_is_configured()
+    {
+        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, ['appends', 'toArray'], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['registerSharedVariables', 'getInput'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn([]);
+
+        $mock_query->expects($this->once())->method('simplePaginate')->willReturn($mock_paginator);
+
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+        $mock_paginator->expects($this->any())->method('toArray');
+
+        $mock->initialiseFilters(['limit_can_disable' => true]);
+        $mock->buildQuery($mock_query);
+    }
+
+    public function test_pagination_to_array_is_returned_when_pagination_is_active()
+    {
+        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, ['appends', 'toArray'], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['registerSharedVariables', 'getInput'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn([]);
+
+        $mock_query->expects($this->once())->method('simplePaginate')->willReturn($mock_paginator);
+
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+
+        $mock_result = 'some mock result';
+
+        $mock_paginator->expects($this->once())->method('toArray')->willReturn($mock_result);
+
+        $mock->initialiseFilters([]);
+
+        $result = $mock->buildQuery($mock_query);
+
+        $this->assertEquals($mock_result, $result);
+    }
+
+    public function test_builder_to_array_is_returned_wrapped_in_array_containing_data_attribute_when_pagination_is_inactive()
+    {
+        $mock_query = $this->getMock(Builder::class, ['get', 'toArray'], [], '', false);
+
+        $mock_paginator = $this->getMock(Paginator::class, ['simplePaginate'], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['registerSharedVariables', 'getInput'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn(['limit' => -1]);
+
+        $mock_query->expects($this->once())->method('get')->willReturnSelf();
+
+        $mock_result_data = 'some_mock_result_data';
+
+        $mock_query->expects($this->once())->method('toArray')->willReturn($mock_result_data);
+
+        $mock_paginator->expects($this->never())->method('simplePaginate');
+
+        $mock->initialiseFilters(['limit_can_disable' => true]);
+
+        $result = $mock->buildQuery($mock_query);
+
+        $this->assertEquals(['data' => $mock_result_data], $result);
     }
 }

@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Input;
 
 /**
@@ -92,6 +91,11 @@ trait Filterable
      */
     protected $limit_max = 100;
 
+    /**
+     * @var bool A flag that indicates whether pagination can be disabled by input from the user.
+     */
+    protected $limit_can_disable;
+
 //    protected $order_by = 0; // @TODO Add support for option
 //
 //    protected $order_direction = 'asc'; // @TODO Add support for option
@@ -153,6 +157,16 @@ trait Filterable
     }
 
     /**
+     * Determines whether the limit can be disabled by a user.
+     *
+     * @return bool
+     */
+    public function canDisableLimit()
+    {
+        return $this->limit_can_disable == true;
+    }
+
+    /**
      * Gets the filters from the current requests and performs and parsing required.
      *
      * @param array $options
@@ -202,9 +216,10 @@ trait Filterable
 
         // Setup Pagination
         $pagination_options = [
-            'limit'     => Arr::get($options, 'limit', $resolve_input === true ? $this->resolveLimit() : $this->getLimit()),
-            'limit_min' => Arr::get($options, 'limit_min', $this->getLimitMin()),
-            'limit_max' => Arr::get($options, 'limit_max', $this->getLimitMax()),
+            'limit'             => Arr::get($options, 'limit', $resolve_input === true ? $this->resolveLimit() : $this->getLimit()),
+            'limit_min'         => Arr::get($options, 'limit_min', $this->getLimitMin()),
+            'limit_max'         => Arr::get($options, 'limit_max', $this->getLimitMax()),
+            'limit_can_disable' => Arr::get($options, 'limit_can_disable', false),
         ];
         $this->setupPagination($pagination_options);
 
@@ -264,6 +279,7 @@ trait Filterable
     protected function resolveLimit()
     {
         $limit = Arr::get($this->getInput(), 'limit', false);
+
         return (int) ($limit === false ? $this->getLimit() : $limit);
     }
 
@@ -274,9 +290,10 @@ trait Filterable
      */
     protected function setupPagination($options)
     {
-        $this->limit = Arr::get($options, 'limit', 15);
-        $this->limit_min = Arr::get($options, 'limit_min', 0);
-        $this->limit_max = Arr::get($options, 'limit_max', 100);
+        $this->limit = Arr::get($options, 'limit');
+        $this->limit_min = Arr::get($options, 'limit_min');
+        $this->limit_max = Arr::get($options, 'limit_max');
+        $this->limit_can_disable = Arr::get($options, 'limit_can_disable');
     }
 
     /**
@@ -306,6 +323,15 @@ trait Filterable
 
         // Apply pagination
         $limit = $this->getLimit();
+
+        if ($this->canDisableLimit() && $limit == -1) {
+            // A limit of -1 is treated as a special value signifying that pagination should
+            // be disabled; hence no limit should be applied. This option is only available
+            // if the configuration value "limit_can_disable" of true is passed by the controller.
+            // This configuration value cannot be set by a user's input.
+            return ['data' => $query->get()->toArray()];
+        }
+
         $limit = $limit > $this->getLimitMax() ? $this->getLimitMax() : $limit;
         $limit = $limit < $this->getLimitMin() ? $this->getLimitMin() : $limit;
 
@@ -313,7 +339,7 @@ trait Filterable
 
         $paginator = $paginator->appends(array_except($this->getInput(), ['page']));
 
-        return $paginator;
+        return $paginator->toArray();
     }
 
     /**
