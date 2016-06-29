@@ -96,10 +96,16 @@ trait Filterable
      */
     protected $limit_can_disable;
 
-//    protected $order_by = 0; // @TODO Add support for option
-//
-//    protected $order_direction = 'asc'; // @TODO Add support for option
-//
+    /**
+     * @var string The name of †he attribute that results should be ordered by.
+     */
+    protected $order_by = null;
+
+    /**
+     * @var string The direction of ordering; only takes effect once $order_by has been set.
+     */
+    protected $order_direction = 'asc';
+
 //    protected $fields = []; // @TODO Add support for option
 
     /**
@@ -167,6 +173,26 @@ trait Filterable
     }
 
     /**
+     * Gets the name of the order attribute that is set; or null if no ordering has been set.
+     *
+     * @return string|null
+     */
+    public function ordersBy()
+    {
+        return $this->order_by;
+    }
+
+    /**
+     * Gets the order direction currently set.
+     *
+     * @return string
+     */
+    public function ordersByDirection()
+    {
+        return $this->order_direction;
+    }
+
+    /**
      * Gets the filters from the current requests and performs and parsing required.
      *
      * @param array $options
@@ -222,6 +248,9 @@ trait Filterable
             'limit_can_disable' => Arr::get($options, 'limit_can_disable', false),
         ];
         $this->setupPagination($pagination_options);
+
+        // Setup Ordering
+        $this->setupOrdering(array_only($options, ['order']), $resolve_input);
 
         // Share properties
         $share_properties = Arr::get($options, 'share_properties', true);
@@ -297,6 +326,56 @@ trait Filterable
     }
 
     /**
+     * Sets up ordering configuration.
+     *
+     * @param array $config
+     * @param bool $should_resolve
+     */
+    private function setupOrdering($config, $should_resolve) {
+        $config_ordering = $this->resolveOrdering($config);
+        $input_ordering = $this->resolveOrdering();
+
+        // Order By
+        $config_order_dir = Arr::get($config_ordering, 'order_by', false);
+        if($config_order_dir !== false) {
+            $this->order_by = $config_order_dir;
+        } else {
+            // If no config value has been set then we will attempt to resolve the value from input; or if this has been
+            // disabled, we will use the default value.
+            $this->order_by = $should_resolve ? Arr::get($input_ordering, 'order_by', $this->order_by) : $this->order_by;
+        }
+
+        // Order Direction
+        $config_order_dir = Arr::get($config_ordering, 'order_dir', false);
+        if($config_order_dir !== false) {
+            $this->order_direction = $config_order_dir;
+        } else {
+            // If no config value has been set then we will attempt to resolve the value from input; or if this has been
+            // disabled, we will use the default value.
+            $this->order_direction = $should_resolve ? Arr::get($input_ordering, 'order_dir', $this->order_direction) : $this->order_direction;
+        }
+    }
+
+    /**
+     * Resolves ordering from any user input that was attached to the current request.
+     *
+     * @param null|array $input Input can optionally be passed in; otherwise it is resolved from the
+     * current request.
+     * @return array
+     */
+    private function resolveOrdering($input = null) {
+        $input = Arr::get(is_null($input) ? $this->getInput() : $input, 'order', []);
+        $ordering = [];
+        if(count($input) > 0) {
+            $ordering['order_by'] = head($input);
+        }
+        if(count($input) > 1 && in_array(strtolower(last($input)), ['asc', 'desc'])) {
+            $ordering['order_dir'] = last($input);
+        }
+        return $ordering;
+    }
+
+    /**
      * Builds the query from the active filters.
      *
      * @param Builder $query
@@ -319,6 +398,11 @@ trait Filterable
         // Load requested relations
         if (!empty($this->load)) {
             $query = $query->with($this->load);
+        }
+
+        // Apply ordering
+        if( ! is_null($this->order_by)) {
+            $query = $query->orderBy($this->order_by, $this->order_direction);
         }
 
         // Apply pagination
