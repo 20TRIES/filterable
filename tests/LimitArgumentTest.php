@@ -12,9 +12,10 @@ class LimitArgumentTest extends \PHPUnit_Framework_TestCase
     {
         $mock = $this
             ->getMockBuilder(Filterable::class)
-            ->setMethods(['resolveCollections', 'resolveFilters', 'resolveLoads', 'registerSharedVariables'])
+            ->setMethods(['resolveCollections', 'resolveFilters', 'resolveLoads', 'registerSharedVariables', 'getInput'])
             ->getMockForTrait();
 
+        $mock->expects($this->any())->method('getInput')->willReturn([]);
         $mock->expects($this->never())->method('resolveCollections');
         $mock->expects($this->never())->method('resolveFilters');
         $mock->expects($this->never())->method('resolveLoads');
