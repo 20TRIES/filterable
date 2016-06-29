@@ -12,7 +12,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Input;
 
 /**
- * A trait that includes teh necessary implementation for making a controllers index action
+ * A trait that includes the necessary implementation for making a controllers index action
  * filterable.
  *
  * @since 0.0.1
