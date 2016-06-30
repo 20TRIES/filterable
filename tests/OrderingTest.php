@@ -8,21 +8,6 @@ use Illuminate\Pagination\Paginator;
 
 class OrderingTest extends \PHPUnit_Framework_TestCase
 {
-    public function test_default_ordering_configuration()
-    {
-        $mock = $this
-            ->getMockBuilder(Filterable::class)
-            ->setMethods(['registerSharedVariables', 'getInput'])
-            ->getMockForTrait();
-
-        $mock->expects($this->any())->method('getInput')->willReturn([]);
-
-        $mock->initialiseFilters();
-
-        $this->assertEquals(null, $mock->ordersBy());
-        $this->assertEquals('asc', $mock->ordersByDirection());
-    }
-
     public function test_ordering_is_configured_from_options()
     {
         $mock = $this
@@ -38,8 +23,7 @@ class OrderingTest extends \PHPUnit_Framework_TestCase
 
         $mock->initialiseFilters(['order' => [$mock_attr_name, $mock_order_dir]]);
         
-        $this->assertEquals($mock_attr_name, $mock->ordersBy());
-        $this->assertEquals($mock_order_dir, $mock->ordersByDirection());
+        $this->assertEquals([[$mock_attr_name, $mock_order_dir]], $mock->ordersBy());
     }
 
     public function test_ordering_is_resolved_from_input()
@@ -57,8 +41,7 @@ class OrderingTest extends \PHPUnit_Framework_TestCase
 
         $mock->initialiseFilters();
 
-        $this->assertEquals($mock_attr_name, $mock->ordersBy());
-        $this->assertEquals($mock_order_dir, $mock->ordersByDirection());
+        $this->assertEquals([[$mock_attr_name, $mock_order_dir]], $mock->ordersBy());
     }
 
     public function test_ordering_configuration_overrides_ordering_resolved_from_input()
@@ -80,8 +63,7 @@ class OrderingTest extends \PHPUnit_Framework_TestCase
 
         $mock->initialiseFilters(['order' => [$mock_attr_name_2, $mock_order_dir_2]]);
 
-        $this->assertEquals($mock_attr_name_2, $mock->ordersBy());
-        $this->assertEquals($mock_order_dir_2, $mock->ordersByDirection());
+        $this->assertEquals([[$mock_attr_name_2, $mock_order_dir_2]], $mock->ordersBy());
     }
 
     public function test_ordering_is_not_resolved_from_input_when_resolved_input_disabled()
@@ -99,8 +81,7 @@ class OrderingTest extends \PHPUnit_Framework_TestCase
 
         $mock->initialiseFilters(['resolve_input' => false]);
 
-        $this->assertNotEquals($mock_attr_name, $mock->ordersBy());
-        $this->assertNotEquals($mock_order_dir, $mock->ordersByDirection());
+        $this->assertNotEquals([[$mock_attr_name, $mock_order_dir]], $mock->ordersBy());
     }
 
     public function test_invalid_order_direction_is_not_taken_from_input()
@@ -118,9 +99,7 @@ class OrderingTest extends \PHPUnit_Framework_TestCase
 
         $mock->initialiseFilters();
 
-
-        $this->assertEquals($mock_attr_name, $mock->ordersBy());
-        $this->assertNotEquals($mock_order_dir, $mock->ordersByDirection());
+        $this->assertEquals([[$mock_attr_name]], $mock->ordersBy());
     }
 
     public function test_ordering_is_passed_to_query_builder_if_order_attribute_has_been_set()
