@@ -529,7 +529,7 @@ trait Filterable
     {
         // Now we will look for a date filter and if one is set, will pass this, with its values mutated
         // to the view.
-        $date_filter = collect($this->getActiveFilters())->first(function ($name, $filter) {
+        $date_filter = collect($this->getActiveFilters())->first(function ($filter) {
             return $filter->getGroup() == 'Dates';
         });
 
