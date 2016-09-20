@@ -61,7 +61,7 @@ class FilterCollection extends Collection
      */
     public function hasDateFilter()
     {
-        return !is_null($this->first(function ($key, $filter) {
+        return !is_null($this->first(function ($filter) {
             return $filter->getGroup() === 'Dates';
         }));
     }
