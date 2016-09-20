@@ -105,7 +105,6 @@ abstract class Filter implements Arrayable, Jsonable
     {
         $this->values = collect($values)->filter(function ($value) {
             return $value !== '';
-
         })->all();
 
         return $this;

@@ -7,10 +7,12 @@ use _20TRIES\Filterable\Exceptions\FilterValidationException;
 use _20TRIES\Filterable\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Input;
 
 /**
- * A trait that includes teh necessary implementation for making a controllers index action
+ * A trait that includes the necessary implementation for making a controllers index action
  * filterable.
  *
  * @since 0.0.1
@@ -74,14 +76,31 @@ trait Filterable
      */
     protected $load = [];
 
-//    protected $offset = 0; // @TODO Add support for option
-//
-//    protected $limit = 15; // @TODO Add support for option
-//
-//    protected $order_by = 0; // @TODO Add support for option
-//
-//    protected $order_direction = 'asc'; // @TODO Add support for option
-//
+    /**
+     * @var array The number of results that should be returned.
+     */
+    protected $limit = 15;
+
+    /**
+     * @var array The maximum number of results that can be returned.
+     */
+    protected $limit_min = 0;
+
+    /**
+     * @var array The minimum number of results that can be returned.
+     */
+    protected $limit_max = 100;
+
+    /**
+     * @var bool A flag that indicates whether pagination can be disabled by input from the user.
+     */
+    protected $limit_can_disable;
+
+    /**
+     * @var array The ordring for a query.
+     */
+    protected $ordering = null;
+
 //    protected $fields = []; // @TODO Add support for option
 
     /**
@@ -96,15 +115,8 @@ trait Filterable
         $this->available_filters = (new FilterCollection($args))->keyBy(function ($item) {
             return $item->getName();
         });
-        return $this;
-    }
 
-    /**
-     * Gets the input for the current request.
-     */
-    public function getInput()
-    {
-        return request()->all();
+        return $this;
     }
 
     /**
@@ -113,6 +125,56 @@ trait Filterable
     public function shouldLoad()
     {
         return $this->load;
+    }
+
+    /**
+     * Gets the number of results that should be returned by any query.
+     *
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    /**
+     * Gets the minimum number of results that a query can return.
+     *
+     * @return int
+     */
+    public function getLimitMin()
+    {
+        return $this->limit_min;
+    }
+
+    /**
+     * Gets the maximum number of results that a query can return.
+     *
+     * @return int
+     */
+    public function getLimitMax()
+    {
+        return $this->limit_max;
+    }
+
+    /**
+     * Determines whether the limit can be disabled by a user.
+     *
+     * @return bool
+     */
+    public function canDisableLimit()
+    {
+        return $this->limit_can_disable == true;
+    }
+
+    /**
+     * Gets the name of the order attribute that is set; or null if no ordering has been set.
+     *
+     * @return string|null
+     */
+    public function ordersBy()
+    {
+        return $this->ordering;
     }
 
     /**
@@ -130,23 +192,19 @@ trait Filterable
         $collections = Arr::get($options, 'collections', []);
 
         if ($resolve_input === true) {
-            $input_collections = Arr::get($this->getInput(), 'collections', []);
-
-            $collections = array_merge($input_collections, $collections);
+            $collections = array_merge($this->resolveCollections(), $collections);
         }
 
         $this->parseFilterCollections($collections);
 
-        // Process filters
+        // Process Filters
         $filters = Arr::get($options, 'filters', []);
 
         if ($resolve_input === true) {
-            $input_filters = Arr::get($this->getInput(), 'filters', []);
-
-            $filters = array_merge($input_filters, $filters);
+            $filters = array_merge($this->resolveFilters(), $filters);
         }
 
-        foreach ($filters AS $item => $value) {
+        foreach ($filters as $item => $value) {
             if (isset($this->available_filters[$item])) {
                 $filter = &$this->available_filters[$item];
 
@@ -160,21 +218,128 @@ trait Filterable
             }
         }
 
+        // Process Loads
+        $this->load = Arr::get($options, 'load', []);
+
+        if ($resolve_input === true) {
+            $this->load = array_merge($this->resolveLoads(), $collections);
+        }
+
+        // Setup Pagination
+        $pagination_options = [
+            'limit'             => Arr::get($options, 'limit', $resolve_input === true ? $this->resolveLimit() : $this->getLimit()),
+            'limit_min'         => Arr::get($options, 'limit_min', $this->getLimitMin()),
+            'limit_max'         => Arr::get($options, 'limit_max', $this->getLimitMax()),
+            'limit_can_disable' => Arr::get($options, 'limit_can_disable', false),
+        ];
+        $this->setupPagination($pagination_options);
+
+        // Setup Ordering
+        $this->setupOrdering(array_only($options, ['order']), $resolve_input);
+
         // Share properties
         $share_properties = Arr::get($options, 'share_properties', true);
 
         if ($share_properties == true) {
             $this->registerSharedVariables();
         }
+    }
 
-        // Now we will process the relations that should be loaded.
-        $load = Arr::get($options, 'load', []);
+    /**
+     * Gets the input for the current request.
+     *
+     * @return array
+     */
+    protected function getInput()
+    {
+        return Input::all();
+    }
 
-        if ($resolve_input === true) {
-            $input_loads = Arr::get($this->getInput(), 'load', []);
-            $load = array_merge($input_loads, $load);
+    /**
+     * Resolves any collections requested via input in the current request.
+     *
+     * @return array
+     */
+    protected function resolveCollections()
+    {
+        return Arr::get($this->getInput(), 'collections', []);
+    }
+
+    /**
+     * Resolves any filters requested via input in the current request.
+     *
+     * @return array
+     */
+    protected function resolveFilters()
+    {
+        return Arr::get($this->getInput(), 'filters', []);
+    }
+
+    /**
+     * Resolves any relations requested to be loaded via input in the current request.
+     *
+     * @return array
+     */
+    protected function resolveLoads()
+    {
+        return Arr::get($this->getInput(), 'load', []);
+    }
+
+    /**
+     * Resolves the number of records that should be loaded from input in the current request.
+     *
+     * @return int
+     */
+    protected function resolveLimit()
+    {
+        $limit = Arr::get($this->getInput(), 'limit', false);
+
+        return (int) ($limit === false ? $this->getLimit() : $limit);
+    }
+
+    /**
+     * Setup pagination.
+     *
+     * @param $options
+     */
+    protected function setupPagination($options)
+    {
+        $this->limit = Arr::get($options, 'limit');
+        $this->limit_min = Arr::get($options, 'limit_min');
+        $this->limit_max = Arr::get($options, 'limit_max');
+        $this->limit_can_disable = Arr::get($options, 'limit_can_disable');
+    }
+
+    /**
+     * Sets up ordering configuration.
+     *
+     * @param array $config
+     * @param bool  $should_resolve
+     */
+    private function setupOrdering($config, $should_resolve)
+    {
+        if (isset($config['order'])) {
+            $input = Arr::get($config, 'order', []);
+        } else {
+            $input = $should_resolve ? Arr::get($this->getInput(), 'order', []) : [];
         }
-        $this->load = $load;
+
+        $ordering = [];
+
+        foreach (collect($input)->chunk(2)->all() as $item) {
+            $next_ordering = [];
+            if ($item->count() > 0) {
+                $order_by = $item->first();
+                $next_ordering[] = $order_by;
+            }
+            if ($item->count() > 1 && in_array(strtolower($item->last()), ['asc', 'desc'])) {
+                $order_dir = $item->last();
+                $next_ordering[] = $order_dir;
+            }
+            $ordering[] = $next_ordering;
+        }
+
+        $this->ordering = $ordering;
     }
 
     /**
@@ -182,7 +347,7 @@ trait Filterable
      *
      * @param Builder $query
      *
-     * @return Builder
+     * @return Paginator
      */
     public function buildQuery($query)
     {
@@ -202,7 +367,31 @@ trait Filterable
             $query = $query->with($this->load);
         }
 
-        return $query;
+        // Apply ordering
+        foreach ($this->ordering as $ordering) {
+            $query = $query->orderBy($ordering[0], isset($ordering[1]) ? $ordering[1] : 'asc');
+        }
+
+
+        // Apply pagination
+        $limit = $this->getLimit();
+
+        if ($this->canDisableLimit() && $limit == -1) {
+            // A limit of -1 is treated as a special value signifying that pagination should
+            // be disabled; hence no limit should be applied. This option is only available
+            // if the configuration value "limit_can_disable" of true is passed by the controller.
+            // This configuration value cannot be set by a user's input.
+            return ['data' => $query->get()->toArray()];
+        }
+
+        $limit = $limit > $this->getLimitMax() ? $this->getLimitMax() : $limit;
+        $limit = $limit < $this->getLimitMin() ? $this->getLimitMin() : $limit;
+
+        $paginator = $query->simplePaginate($limit);
+
+        $paginator = $paginator->appends(array_except($this->getInput(), ['page']));
+
+        return $paginator->toArray();
     }
 
     /**
@@ -279,7 +468,7 @@ trait Filterable
      */
     protected function activateFilters($filters)
     {
-        foreach ($filters AS $filter => $data) {
+        foreach ($filters as $filter => $data) {
             $this->activateFilter($filter, $data);
         }
     }
