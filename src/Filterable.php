@@ -314,11 +314,11 @@ trait Filterable
      * Sets up ordering configuration.
      *
      * @param array $config
-     * @param bool $should_resolve
+     * @param bool  $should_resolve
      */
-    private function setupOrdering($config, $should_resolve) {
-
-        if(isset($config['order'])) {
+    private function setupOrdering($config, $should_resolve)
+    {
+        if (isset($config['order'])) {
             $input = Arr::get($config, 'order', []);
         } else {
             $input = $should_resolve ? Arr::get($this->getInput(), 'order', []) : [];
@@ -326,13 +326,13 @@ trait Filterable
 
         $ordering = [];
 
-        foreach (collect($input)->chunk(2)->all() AS $item) {
+        foreach (collect($input)->chunk(2)->all() as $item) {
             $next_ordering = [];
-            if($item->count() > 0) {
+            if ($item->count() > 0) {
                 $order_by = $item->first();
                 $next_ordering[] = $order_by;
             }
-            if($item->count() > 1 && in_array(strtolower($item->last()), ['asc', 'desc'])) {
+            if ($item->count() > 1 && in_array(strtolower($item->last()), ['asc', 'desc'])) {
                 $order_dir = $item->last();
                 $next_ordering[] = $order_dir;
             }
@@ -368,7 +368,7 @@ trait Filterable
         }
 
         // Apply ordering
-        foreach ($this->ordering AS $ordering) {
+        foreach ($this->ordering as $ordering) {
             $query = $query->orderBy($ordering[0], isset($ordering[1]) ? $ordering[1] : 'asc');
         }
 

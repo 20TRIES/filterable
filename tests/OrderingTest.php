@@ -14,15 +14,10 @@ class OrderingTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(Filterable::class)
             ->setMethods(['registerSharedVariables', 'getInput'])
             ->getMockForTrait();
-
         $mock->expects($this->any())->method('getInput')->willReturn([]);
-
         $mock_attr_name = 'mock_attr_name';
-
         $mock_order_dir = 'desc';
-
         $mock->initialiseFilters(['order' => [$mock_attr_name, $mock_order_dir]]);
-        
         $this->assertEquals([[$mock_attr_name, $mock_order_dir]], $mock->ordersBy());
     }
 
@@ -32,15 +27,10 @@ class OrderingTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder(Filterable::class)
             ->setMethods(['registerSharedVariables', 'getInput'])
             ->getMockForTrait();
-
         $mock_attr_name = 'mock_attr_name';
-
         $mock_order_dir = 'desc';
-
         $mock->expects($this->any())->method('getInput')->willReturn(['order' => [$mock_attr_name, $mock_order_dir]]);
-
         $mock->initialiseFilters();
-
         $this->assertEquals([[$mock_attr_name, $mock_order_dir]], $mock->ordersBy());
     }
 
