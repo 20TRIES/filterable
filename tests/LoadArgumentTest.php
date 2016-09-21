@@ -4,6 +4,7 @@ namespace _20TRIES\Test;
 
 use _20TRIES\Filterable\Filterable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\Paginator;
 
 /**
  * A test quite for testing handling of the load attribute which can be passed to filterable in a request.
@@ -12,61 +13,48 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class LoadArgumentTest extends \PHPUnit_Framework_TestCase
 {
-    public function test_load_argument_is_correctly_interpreted() {
-        $controller = new TestControllerOne();
-        $controller->index();
-        $this->assertEquals(['relationOne', 'relationTwo', 'relationThree'], $controller->shouldLoad());
+    public function test_load_argument_is_correctly_interpreted()
+    {
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['getInput', 'registerSharedVariables'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn([
+            'load' => ['relationOne', 'relationTwo', 'relationThree'],
+        ]);
+
+        $mock->initialiseFilters();
+
+        $this->assertEquals(['relationOne', 'relationTwo', 'relationThree'], $mock->shouldLoad());
     }
 
-    public function test_loads_are_passed_to_builder() {
-        $mock_query = $this->getMock(Builder::class, [], [], '', false);
+    public function test_loads_are_passed_to_builder()
+    {
+        $mock_query = $this->getMock(Builder::class, ['simplePaginate', 'with'], [], '', false);
 
-        $controller = new TestControllerTwo();
+        $mock_paginator = $this->getMock(Paginator::class, ['appends', 'toArray'], [], '', false);
+
+        $mock = $this
+            ->getMockBuilder(Filterable::class)
+            ->setMethods(['getInput', 'registerSharedVariables'])
+            ->getMockForTrait();
+
+        $mock->expects($this->any())->method('getInput')->willReturn([
+            'load' => ['relationOne', 'relationTwo', 'relationThree'],
+        ]);
+
+        $mock_query->expects($this->any())->method('simplePaginate')->willReturn($mock_paginator);
+        $mock_paginator->expects($this->any())->method('appends')->willReturnSelf();
+        $mock_paginator->expects($this->any())->method('toArray');
 
         $mock_query
             ->expects($this->once())
             ->method('with')
-            ->with($this->equalTo(['relationOne', 'relationTwo', 'relationThree']));
+            ->with($this->equalTo(['relationOne', 'relationTwo', 'relationThree']))
+            ->willReturnSelf();
 
-        $controller->index($mock_query);
+        $mock->initialiseFilters();
+        $mock->buildQuery($mock_query);
     }
 }
-
-class TestControllerOne {
-    use Filterable;
-
-    protected $func;
-
-    public function index() {
-        $this->initialiseFilters();
-    }
-
-    public function getInput() {
-        return  ['load' => ['relationOne', 'relationTwo', 'relationThree']];
-    }
-
-    public function registerSharedVariables() {
-    }
-};
-
-class TestControllerTwo {
-
-    use Filterable;
-
-    protected $func;
-
-    public function index($query)
-    {
-        $this->initialiseFilters();
-        $this->buildQuery($query);
-    }
-
-    public function getInput()
-    {
-        return  ['load' => ['relationOne', 'relationTwo', 'relationThree']];
-    }
-
-    public function registerSharedVariables()
-    {
-    }
-};
