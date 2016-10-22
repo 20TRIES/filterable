@@ -157,8 +157,6 @@ class ScopedAdaptorTest extends PHPUnit_Framework_TestCase
         $query->expects($this->once())->method('barScope')->with('foo', 'bar')->willReturnSelf();
         $adaptor->adapt($request, $query);
     }
-
-    // test_422_if_input_is_invalid
 }
 
 abstract class MockRequest implements HasFilters {
