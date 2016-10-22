@@ -40,7 +40,7 @@ trait Filterable
 
         foreach (self::$available_adaptors as $adaptor) {
 
-            $adaptor = is_string($adaptor) ? new $adaptor() : $adaptor;
+            $adaptor = new $adaptor();
 
             if ($request instanceof $adaptor::$trait) {
 
