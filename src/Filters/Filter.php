@@ -4,7 +4,6 @@ namespace _20TRIES\Filterable\Filters;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
-use Illuminate\Support\Facades\Validator;
 
 /**
  * A filter that can be used with the Filterable trait to filter query results.
@@ -40,22 +39,9 @@ class Filter implements Arrayable, Jsonable
     protected $name = null;
 
     /**
-     * @var array An array of validation error messages.
-     */
-    protected $errors;
-
-    /**
      * @var string The string value that should be used when grouping filters.
      */
     protected $group = 'Other';
-
-    /**
-     * Filter constructor.
-     */
-    public function __construct()
-    {
-        $this->errors = collect();
-    }
 
     /**
      * Gets a function that will apply a filter to a given query.
@@ -240,24 +226,6 @@ class Filter implements Arrayable, Jsonable
     }
 
     /**
-     * @return Validator Returns a validator for the filter.
-     */
-    public function validate()
-    {
-        // @TODO Remove validation from filters.
-
-        return null;
-    }
-
-    /**
-     * @return \Illuminate\Support\Collection
-     */
-    public function errors()
-    {
-        return $this->errors;
-    }
-
-    /**
      * @inherit
      */
     public function toArray()
@@ -307,8 +275,6 @@ class Filter implements Arrayable, Jsonable
         $instance->values = $this->values;
 
         $instance->name = $this->name;
-
-        $instance->errors = $this->errors;
 
         return $instance;
     }
