@@ -4,13 +4,14 @@ namespace _20TRIES\Filterable\Filters;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * A filter that can be used with the Filterable trait to filter query results.
  *
  * @since 0.0.1
  */
-abstract class Filter implements Arrayable, Jsonable
+class Filter implements Arrayable, Jsonable
 {
     /**
      * @var null|string The class method that a filter should be applied to.
@@ -57,11 +58,36 @@ abstract class Filter implements Arrayable, Jsonable
     }
 
     /**
-     * @return null|string
+     * Gets a function that will apply a filter to a given query.
+     *
+     * The function will have the following definition:
+     *
+     * function ($query, ...$params) : $query
+     *
+     * @return callable
      */
     public function getMethod()
     {
-        return $this->method;
+        $method = $this->method;
+        return is_callable($method)
+            ? $this->method
+            : function ($query, ...$params) use ($method) {
+                return $query->$method(...$params);
+            };
+    }
+
+    /**
+     * Sets the method used by a filter.
+     *
+     * @param string|callable $method
+     * @param $method
+     * @return $this
+     */
+    public function setMethod($method)
+    {
+        $this->method = $method;
+
+        return $this;
     }
 
     /**
@@ -165,9 +191,14 @@ abstract class Filter implements Arrayable, Jsonable
     }
 
     /**
-     * @return string Gets the filter type; for example: "text", "select", "date_range_picker".
+     * Gets the filter type.
+     *
+     * @return string
      */
-    abstract public function getType();
+    public function getType()
+    {
+        return 'text';
+    }
 
     /**
      * @return string Gets the grouping that should be used wherever the filters a grouped together; for example,
@@ -183,12 +214,20 @@ abstract class Filter implements Arrayable, Jsonable
      *
      * @return array
      */
-    abstract public function getOptions();
+    public function getOptions()
+    {
+        return [];
+    }
 
     /**
-     * @return array Mutates the filter values so that it is readily prepared for processing.
+     * Mutates the filter values so that it is readily prepared for processing.
+     *
+     * @return array
      */
-    abstract public function getMutatedValues();
+    public function getMutatedValues()
+    {
+        return $this->getValues();
+    }
 
     /**
      * Mutates the current filter values and sets them to the mutated values.
@@ -201,9 +240,14 @@ abstract class Filter implements Arrayable, Jsonable
     }
 
     /**
-     * @return \Validator Returns a validator for the filter.
+     * @return Validator Returns a validator for the filter.
      */
-    abstract public function validate();
+    public function validate()
+    {
+        // @TODO Remove validation from filters.
+
+        return null;
+    }
 
     /**
      * @return \Illuminate\Support\Collection
