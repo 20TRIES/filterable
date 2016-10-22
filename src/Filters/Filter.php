@@ -2,15 +2,12 @@
 
 namespace _20TRIES\Filterable\Filters;
 
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Contracts\Support\Jsonable;
-
 /**
  * A filter that can be used with the Filterable trait to filter query results.
  *
  * @since 0.0.1
  */
-class Filter implements Arrayable, Jsonable
+class Filter
 {
     /**
      * @var null|string The class method that a filter should be applied to.
@@ -110,15 +107,11 @@ class Filter implements Arrayable, Jsonable
 
     /**
      * @param array $values
-     *
      * @return $this
      */
     public function setValues(array $values)
     {
-        $this->values = collect($values)->filter(function ($value) {
-            return $value !== '';
-        })->all();
-
+        $this->values = array_filter($values);
         return $this;
     }
 
@@ -215,19 +208,6 @@ class Filter implements Arrayable, Jsonable
         return $this->getValues();
     }
 
-    /**
-     * Mutates the current filter values and sets them to the mutated values.
-     */
-    public function mutate()
-    {
-        $this->values = $this->getMutatedValues();
-
-        return $this;
-    }
-
-    /**
-     * @inherit
-     */
     public function toArray()
     {
         return [
@@ -249,9 +229,6 @@ class Filter implements Arrayable, Jsonable
         ];
     }
 
-    /**
-     * @inherit
-     */
     public function toJson($options = 0)
     {
         return json_encode($this->toArray(), $options);
