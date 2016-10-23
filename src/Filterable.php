@@ -2,8 +2,9 @@
 
 namespace _20TRIES\Filterable;
 
-use _20TRIES\Filterable\Adaptors\FilteringAdaptor;
+use _20TRIES\Filterable\Adaptors\FilteringAdaptor as Filters;
 use _20TRIES\Filterable\Adaptors\Interfaces\HasFilters;
+use _20TRIES\Filterable\Adaptors\OrderingAdaptor as Order;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -19,9 +20,9 @@ trait Filterable
      *
      * @return array
      */
-    protected static $available_adaptors = [
-        FilteringAdaptor::class,
-//      OrderingAdaptor::class,
+    protected static $adapt = [
+        Filters::class,
+        Order::class,
 //      RelationsAdaptor::class,
 //      PaginationAdaptor::class,
     ];
@@ -35,7 +36,7 @@ trait Filterable
      */
     protected function build(HasFilters $request, Model $model) {
         $query = $model->newQuery();
-        foreach (self::$available_adaptors as $adaptor) {
+        foreach (self::$adapt as $adaptor) {
             $adaptor = new $adaptor();
             if ($request instanceof $adaptor::$trait) {
                 $query = $adaptor->adapt($request, $query);
