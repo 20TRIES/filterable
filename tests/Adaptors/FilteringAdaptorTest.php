@@ -5,7 +5,7 @@ use _20TRIES\Filterable\Filters\BasicSelectFilter;
 use \_20TRIES\Filterable\Adaptors\Interfaces\HasFilters;
 use _20TRIES\Filterable\Filters\Filter;
 
-class ScopedAdaptorTest extends PHPUnit_Framework_TestCase
+class FilteringAdaptorTest extends PHPUnit_Framework_TestCase
 {
     public function test_scope_config_with_string() {
         $adaptor = new FilteringAdaptor('foo');
@@ -156,6 +156,10 @@ class ScopedAdaptorTest extends PHPUnit_Framework_TestCase
             ->getMock();
         $query->expects($this->once())->method('barScope')->with('foo', 'bar')->willReturnSelf();
         $adaptor->adapt($request, $query);
+    }
+
+    public function test_default_parameter_name() {
+        $this->assertEquals('filters', (new FilteringAdaptor())->getParameter());
     }
 }
 

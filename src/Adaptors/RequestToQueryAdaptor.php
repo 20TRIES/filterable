@@ -57,4 +57,14 @@ abstract class RequestToQueryAdaptor
      * @return array
      */
     protected abstract function getConfiguration($request);
+
+    /**
+     * Gets the name of the parameter used by an adaptor to extract data from a request.
+     *
+     * @return null|string
+     */
+    public function getParameter()
+    {
+        return $this->parameter;
+    }
 }

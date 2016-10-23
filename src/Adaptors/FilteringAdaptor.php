@@ -18,6 +18,11 @@ class FilteringAdaptor extends RequestToQueryAdaptor
     protected static $trait = HasFilters::class;
 
     /**
+     * @var string The name of the query string parameter that should be used.
+     */
+    protected $parameter = 'filters';
+
+    /**
      * Handles the adaption.
      *
      * @param Request $request
