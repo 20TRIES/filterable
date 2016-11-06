@@ -43,11 +43,22 @@ abstract class RequestToQueryAdaptor
      * Gets the filters passed as input from a request.
      *
      * @param Request $request
-     * @return mixed
+     * @param string $parameter
+     * @param null $default
+     * @return mixed|null
      */
-    protected function getDataFromRequest(Request $request)
+    protected function getDataFromRequest(Request $request, $parameter, $default = null)
     {
-        return $request->get($this->parameter);
+        $components = array_filter(explode('.', trim($parameter)));
+        $input = $request->get(head($components));
+        foreach (array_slice($components, 1) as $component) {
+            if (array_key_exists($component, $input)) {
+                $input = $input[$component];
+            } else {
+                return $default;
+            }
+        }
+        return $input;
     }
 
     /**

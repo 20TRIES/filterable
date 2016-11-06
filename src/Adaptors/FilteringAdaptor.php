@@ -29,13 +29,30 @@ class FilteringAdaptor extends RequestToQueryAdaptor
      * @param mixed $query
      */
     public function adapt(Request $request, $query) {
-        foreach ($this->getDataFromRequest($request) as $name => $value) {
-            $filter = $this->resolveFilter($request, $name);
-            if ( ! is_null($filter)) {
+        foreach ($this->getConfiguration($request) as $key => $value) {
+            $param = $this->getParameter() . '.' . head($this->getParams($key));
+            $input = $this->getDataFromRequest($request, $param, false);
+            if ($input !== false) {
+                $filter = $this->resolveFilter($request, $key);
                 $method = $filter->getMethod();
+                $filter->setValues(is_array($input) ? $input : [$input]);
                 $query = $method($query, ...$filter->getMutatedValues());
             }
         }
+    }
+
+    /**
+     * Extracts all request parameters from a filter key.
+     *
+     * @param string $filter_key
+     * @return array
+     */
+    protected function getParams($filter_key) {
+        $params = explode(',', trim($filter_key));
+        foreach ($params as $key => $param) {
+            $params[$key] = trim($param);
+        }
+        return $params;
     }
 
     /**
@@ -76,29 +93,11 @@ class FilteringAdaptor extends RequestToQueryAdaptor
         if (is_string($config) || is_callable($config)) {
             $filter = new Filter();
             $filter->setMethod($config);
-            $filter->setValues($this->getFilterInput($scope, $request));
         } elseif ($config instanceof Filter) {
             $filter = $config;
         } else {
             throw new InvalidConfigurationException('Unable to generate a filter for the given scope.');
         }
         return $filter;
-    }
-
-    /**
-     * Gets any input, provided within a request, for a given filter.
-     *
-     * @param string $filter
-     * @param HasFilters $request
-     * @return null|array
-     */
-    protected function getFilterInput($filter, HasFilters $request)
-    {
-        $filters = $this->getDataFromRequest($request);
-        if (array_key_exists($filter, $filters)) {
-            return is_array($filters[$filter]) ? $filters[$filter] : [$filters[$filter]];
-        } else {
-            return [];
-        }
     }
 }

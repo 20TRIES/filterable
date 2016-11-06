@@ -30,20 +30,22 @@ class OrderingAdaptor extends RequestToQueryAdaptor
      */
     public function adapt(Request $request, $query)
     {
-        $ordering = $this->resolveOrdering($request, $this->getDataFromRequest($request));
-        return ! is_null($ordering) ? $ordering($query) : $query;
+        $ordering = $this->resolveOrdering($request);
+        return is_null($ordering) ? $query : $ordering($query);
     }
 
     /**
      * Resolves a filter from a method name or alias.
      *
      * @param HasOrderings $request
-     * @param string $ordering_name
      * @return mixed
      */
-    protected function resolveOrdering(HasOrderings $request, $ordering_name) {
+    protected function resolveOrdering(HasOrderings $request) {
         $config = $this->getConfiguration($request);
-        return array_key_exists($ordering_name, $config) ? $this->getOrderingInstance($config[$ordering_name]) : null;
+        $ordering_name = $this->getDataFromRequest($request, $this->getParameter(), false);
+        return $ordering_name !== false && array_key_exists($ordering_name, $config)
+            ? $this->getOrderingInstance($config[$ordering_name])
+            : null;
     }
 
     /**
