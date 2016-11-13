@@ -32,20 +32,6 @@ class RequestToQueryAdaptor
     }
 
     /**
-     * Extracts all request parameters from a filter key.
-     *
-     * @param string $filter_key
-     * @return array
-     */
-    protected function getParams($filter_key) {
-        $params = explode(',', trim($filter_key));
-        foreach ($params as $key => $param) {
-            $params[$key] = trim($param);
-        }
-        return $params;
-    }
-
-    /**
      * Gets the configuration for an adaptor, from a request.
      *
      * @param FilterableRequest $request
@@ -123,42 +109,6 @@ class RequestToQueryAdaptor
         }
 
         return $parsed_configurations;
-    }
-
-    /**
-     * Resolves a filter from a method name or alias.
-     *
-     * @param HasFilters $request
-     * @param string $filter_name
-     * @return Filter|null
-     */
-    protected function resolveFilter(HasFilters $request, $filter_name) {
-        $config = $this->getConfiguration($request);
-        return array_key_exists($filter_name, $config)
-            ? $this->getFilterInstance($request, $filter_name, $config[$filter_name])
-            : null;
-    }
-
-    /**
-     * Gets a filter object from a scope's config.
-     *
-     * @param HasFilters $request
-     * @param string $scope
-     * @param array|string $config
-     * @return Filter
-     * @throws InvalidConfigurationException
-     */
-    protected function getFilterInstance(HasFilters $request, $scope, $config)
-    {
-        if (is_string($config) || is_callable($config)) {
-            $filter = new Filter();
-            $filter->setMethod($config);
-        } elseif ($config instanceof Filter) {
-            $filter = $config;
-        } else {
-            throw new InvalidConfigurationException('Unable to generate a filter for the given scope.');
-        }
-        return $filter;
     }
 
     /**
