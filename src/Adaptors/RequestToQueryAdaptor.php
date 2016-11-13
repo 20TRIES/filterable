@@ -94,6 +94,11 @@ class RequestToQueryAdaptor
                         $param = new Param($param);
                     }
 
+                    // If the parameter is a boolean.
+                    elseif ($param === 'true' || $param === 'false') {
+                        $param = $param === 'true';
+                    }
+
                     else {
                         throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
                     }

@@ -418,4 +418,85 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
         $query->expects($this->once())->method('barScope')->with('baz', 35)->willReturnSelf();
         $adaptor->adapt($request, $query);
     }
+
+    public function test_that_string_config_n() {
+        $adaptor = new RequestToQueryAdaptor('foo');
+        $request = new class() extends TestingRequest {
+            protected $input = ['foo' => 30];
+            public function scopes() {
+                return ['foo' => "barScope(true)"];
+            }
+        };
+
+        $configurations = $adaptor->getConfiguration($request);
+        $this->assertInternalType('array', $configurations);
+        $this->assertNotEmpty($configurations);
+
+        foreach ($configurations as $filter => $configuration) {
+            $this->assertEquals('foo', $filter);
+            $this->assertInternalType('array', $configuration);
+            $this->assertEquals(2, count($configuration));
+
+            $this->assertArrayHasKey(0, $configuration);
+            $this->assertInstanceOf(Closure::class, $configuration[0]);
+
+            $this->assertArrayHasKey(1, $configuration);
+            $this->assertInternalType('bool', $configuration[1]);
+            $this->assertEquals(true, $configuration[1]);
+        }
+    }
+
+    public function test_that_string_config_o() {
+        $adaptor = new RequestToQueryAdaptor('foo');
+        $request = new class() extends TestingRequest {
+            protected $input = ['foo' => 30];
+            public function scopes() {
+                return ['foo' => "barScope(false)"];
+            }
+        };
+
+        $configurations = $adaptor->getConfiguration($request);
+        $this->assertInternalType('array', $configurations);
+        $this->assertNotEmpty($configurations);
+
+        foreach ($configurations as $filter => $configuration) {
+            $this->assertEquals('foo', $filter);
+            $this->assertInternalType('array', $configuration);
+            $this->assertEquals(2, count($configuration));
+
+            $this->assertArrayHasKey(0, $configuration);
+            $this->assertInstanceOf(Closure::class, $configuration[0]);
+
+            $this->assertArrayHasKey(1, $configuration);
+            $this->assertInternalType('bool', $configuration[1]);
+            $this->assertEquals(false, $configuration[1]);
+        }
+    }
+
+    public function test_that_string_config_p() {
+        $adaptor = new RequestToQueryAdaptor('foo');
+        $request = new class() extends TestingRequest {
+            protected $input = ['foo' => 30, 'true' => 40];
+            public function scopes() {
+                return ['foo' => "barScope(false)"];
+            }
+        };
+
+        $configurations = $adaptor->getConfiguration($request);
+        $this->assertInternalType('array', $configurations);
+        $this->assertNotEmpty($configurations);
+
+        foreach ($configurations as $filter => $configuration) {
+            $this->assertEquals('foo', $filter);
+            $this->assertInternalType('array', $configuration);
+            $this->assertEquals(2, count($configuration));
+
+            $this->assertArrayHasKey(0, $configuration);
+            $this->assertInstanceOf(Closure::class, $configuration[0]);
+
+            $this->assertArrayHasKey(1, $configuration);
+            $this->assertInternalType('bool', $configuration[1]);
+            $this->assertEquals(false, $configuration[1]);
+        }
+    }
 }
