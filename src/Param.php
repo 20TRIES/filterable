@@ -2,9 +2,6 @@
 
 namespace _20TRIES\Filterable;
 
-
-use _20TRIES\Filterable\Adaptors\Interfaces\FilterableRequest;
-
 class Param
 {
     protected $name;
@@ -16,9 +13,5 @@ class Param
 
     public function name() {
         return $this->name;
-    }
-
-    public function getValue(FilterableRequest $request) {
-        return $request->get($this->name(), null);
     }
 }
