@@ -43,18 +43,19 @@ class RequestToQueryAdaptor
         $raw_configurations = $request->scopes();
         $configurations = $this->preCompile($raw_configurations);
         $all_input = $this->getAllDataFromRequest($request);
+        $all_input_keys = $this->getArrayKeys($all_input);
         $parsed_configurations = [];
         foreach ($configurations as $key => $configuration) {
             // If the request params do not match the params provided in the filter key; continue.
             $name_params = array_filter(explode(',', $key));
-            $intersection = array_intersect(array_keys($all_input), $name_params);
+            $intersection = array_intersect($all_input_keys, $name_params);
             sort($intersection);
             if ($intersection != $name_params) {
                 continue;
             }
-            $input = array_intersect_key($all_input, array_flip($name_params));
+            $input_keys = array_intersect($all_input_keys, $name_params);
             foreach (array_slice($configuration, 1) as $param) {
-                if ($param  instanceof Param && !array_key_exists($param->name(), $input)) {
+                if ($param  instanceof Param && !in_array($param->name(), $input_keys)) {
                     throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
                 }
             }
@@ -159,5 +160,30 @@ class RequestToQueryAdaptor
     protected function getAllDataFromRequest(Request $request)
     {
         return ($request->getMethod() == 'GET' ? $request->query : $request->request)->all();
+    }
+
+    /**
+     * Gets the keys available in a "dot notation" array.
+     *
+     * @param array $arr
+     * @return array
+     */
+    protected function getArrayKeys($arr) {
+        $keys = [];
+        $sub_arrs = [['append' => '', 'data' => $arr]];
+        while(! empty($sub_arrs)) {
+            $sub_arr = array_pop($sub_arrs);
+            foreach ($sub_arr['data'] as $key => $value) {
+                if (is_array($value) && !empty($value)) {
+                    $sub_arrs[] = [
+                        'append' => implode('.', array_filter([trim($sub_arr['append']), trim($key)])),
+                        'data'   => $value,
+                    ];
+                } else {
+                    $keys[] = implode('.', array_filter([trim($sub_arr['append']), trim($key)]));
+                }
+            }
+        }
+        return $keys;
     }
 }

@@ -3,6 +3,7 @@
 namespace _20TRIES\Test\RequestToQueryAdaptor;
 
 use _20TRIES\Filterable\Adaptors\RequestToQueryAdaptor;
+use _20TRIES\Filterable\Param;
 use _20TRIES\Test\TestingRequest;
 use Closure;
 
@@ -497,6 +498,32 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertArrayHasKey(1, $configuration);
             $this->assertInternalType('bool', $configuration[1]);
             $this->assertEquals(false, $configuration[1]);
+        }
+    }
+
+    public function test_that_string_config_q() {
+        $adaptor = new RequestToQueryAdaptor();
+        $request = new class() extends TestingRequest {
+            protected $input = ['foo' => ['bar' => 1, 'baz' => 2]];
+            public function scopes() {
+                return ['foo.bar' => "barScope(foo.bar)"];
+            }
+        };
+
+        $configurations = $adaptor->getConfiguration($request);
+        $this->assertInternalType('array', $configurations);
+        $this->assertNotEmpty($configurations);
+        foreach ($configurations as $filter => $configuration) {
+            $this->assertEquals('foo.bar', $filter);
+            $this->assertInternalType('array', $configuration);
+            $this->assertEquals(2, count($configuration));
+
+            $this->assertArrayHasKey(0, $configuration);
+            $this->assertInstanceOf(Closure::class, $configuration[0]);
+
+            $this->assertArrayHasKey(1, $configuration);
+            $this->assertInstanceOf(Param::class, $configuration[1]);
+            $this->assertAttributeEquals('foo.bar', 'name', $configuration[1]);
         }
     }
 }
