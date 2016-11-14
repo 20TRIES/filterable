@@ -38,35 +38,49 @@ class RequestToQueryAdaptor
      * @return array
      * @throws InvalidConfigurationException
      */
-    public function getConfiguration(FilterableRequest $request) {
-
-        $configurations = $request->scopes();
-
+    public function getConfiguration(FilterableRequest $request)
+    {
+        $raw_configurations = $request->scopes();
+        $configurations = $this->preCompile($raw_configurations);
         $all_input = $this->getAllDataFromRequest($request);
-
         $parsed_configurations = [];
-
-        foreach ($configurations as $filter_key => $configuration) {
-
+        foreach ($configurations as $key => $configuration) {
             // If the request params do not match the params provided in the filter key; continue.
-            $name_params = array_filter(explode(',', $filter_key));
-            sort($name_params);
+            $name_params = array_filter(explode(',', $key));
             $intersection = array_intersect(array_keys($all_input), $name_params);
             sort($intersection);
             if ($intersection != $name_params) {
                 continue;
             }
-
-            // Get input that is available to the callback function.
             $input = array_intersect_key($all_input, array_flip($name_params));
+            foreach (array_slice($configuration, 1) as $param) {
+                if ($param  instanceof Param && !array_key_exists($param->name(), $input)) {
+                    throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
+                }
+            }
+            $parsed_configurations[$key] = $configuration;
+        }
+        return $parsed_configurations;
+    }
 
-            // Get parsed key.
-            $parsed_key = implode(',', $name_params);
+    /**
+     * Pre-compiles a set of scope configurations.
+     *
+     * @param $configurations
+     * @return array
+     * @throws InvalidConfigurationException
+     */
+    public function preCompile($configurations)
+    {
+        $parsed_configurations = [];
+        foreach ($configurations as $key => $configuration) {
+            $name_params = array_filter(explode(',', $key));
+            sort($name_params);
+            $parsed_key = trim(implode(',', $name_params));
             if (array_key_exists($parsed_key, $parsed_configurations)) {
                 throw new InvalidConfigurationException('Duplicated filter');
             }
 
-            // Get Callback
             if (is_string($configuration)) {
                 $parsed_configurations[$parsed_key] = [];
                 $method = preg_replace('/[^(]*\K.*/si', '', $configuration);
@@ -74,45 +88,25 @@ class RequestToQueryAdaptor
                 $parsed_configurations[$parsed_key][] = function ($query, ...$params) use ($method) {
                     return $query->$method(...$params);
                 };
-
-                // Get params.
                 foreach ($params as $key => $param) {
                     $param = trim($param);
-
-                    // If the parameter is a string literal.
                     if (in_array(substr($param, 0, 1), ['"', '\''])) {
                         $param = substr($param, 1, -1);
-                    }
-
-                    // If the parameter is a numeric literal.
-                    elseif (is_numeric($param)) {
+                    } elseif (is_numeric($param)) {
                         $param = ((float)$param - (int)$param) > 0 ? (float)$param : (int)$param;
-                    }
-
-                    // If the parameter is a input parameter reference.
-                    elseif(array_key_exists($param, $input)) {
-                        $param = new Param($param);
-                    }
-
-                    // If the parameter is a boolean.
-                    elseif ($param === 'true' || $param === 'false') {
+                    } elseif ($param === 'true' || $param === 'false') {
                         $param = $param === 'true';
-                    }
-
-                    else {
-                        throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
+                    } else {
+                        $param = new Param($param);
                     }
                     $parsed_configurations[$parsed_key][] = $param;
                 }
-            } elseif (is_array($configuration)) {
-                $parsed_configurations[$parsed_key] = $configuration;
-            } elseif (is_callable($configuration)) {
-                $parsed_configurations[$parsed_key] = [$configuration];
+            } elseif(is_callable($configuration)) {
+                $parsed_configurations[$key] = [$configuration];
             } else {
-                throw new InvalidConfigurationException('Unable to generate a filter for the given scope.');
+                $parsed_configurations[$parsed_key] = $configuration;
             }
         }
-
         return $parsed_configurations;
     }
 

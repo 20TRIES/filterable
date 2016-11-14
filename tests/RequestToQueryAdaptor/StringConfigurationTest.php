@@ -9,7 +9,7 @@ use Closure;
 class StringConfigurationTest extends \PHPUnit_Framework_TestCase
 {
     public function test_that_string_config_a() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => []];
             public function scopes() {
@@ -34,7 +34,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_a_2() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 'foo'];
             public function scopes() {
@@ -57,7 +57,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_b() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25];
             public function scopes() {
@@ -88,7 +88,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
      * @expectedExceptionMessage Scope parameters must be included within the configuration key
      */
     public function test_that_string_config_c() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -102,7 +102,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_d() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -133,7 +133,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_e() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -168,7 +168,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
      * @expectedExceptionMessage Duplicated filter
      */
     public function test_that_string_config_f() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -185,7 +185,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_g() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -216,7 +216,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_h() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -246,7 +246,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_i() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -277,7 +277,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_j() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30, '25' => 35];
             public function scopes() {
@@ -308,7 +308,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_k() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -339,7 +339,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_l() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30];
             public function scopes() {
@@ -370,7 +370,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_m() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['bar' => 25, 'foo' => 30, 'hello' => 35];
             public function scopes() {
@@ -420,7 +420,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_n() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['foo' => 30];
             public function scopes() {
@@ -447,7 +447,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_o() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['foo' => 30];
             public function scopes() {
@@ -474,7 +474,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_p() {
-        $adaptor = new RequestToQueryAdaptor('foo');
+        $adaptor = new RequestToQueryAdaptor();
         $request = new class() extends TestingRequest {
             protected $input = ['foo' => 30, 'true' => 40];
             public function scopes() {
