@@ -1,6 +1,6 @@
 <?php
 
-namespace _20TRIES\Filterable\Adaptors\Interfaces;
+namespace _20TRIES\Filterable\Interfaces;
 
 /**
  * An interface for requests that are filterable.

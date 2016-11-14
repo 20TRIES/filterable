@@ -2,7 +2,7 @@
 
 namespace _20TRIES\Test;
 
-use _20TRIES\Filterable\Adaptors\Interfaces\FilterableRequest;
+use _20TRIES\Filterable\Interfaces\FilterableRequest;
 use \Symfony\Component\HttpFoundation\Request;
 
 abstract class TestingRequest extends Request  implements FilterableRequest  {

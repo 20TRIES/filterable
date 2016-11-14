@@ -2,7 +2,7 @@
 
 namespace _20TRIES\Test\RequestToQueryAdaptor;
 
-use _20TRIES\Filterable\Adaptors\RequestToQueryAdaptor;
+use _20TRIES\Filterable\RequestToQueryAdaptor;
 use _20TRIES\Filterable\Param;
 use _20TRIES\Test\TestingRequest;
 use Illuminate\Database\Eloquent\Builder;

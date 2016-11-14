@@ -1,11 +1,10 @@
 <?php
 
-namespace _20TRIES\Filterable\Adaptors;
+namespace _20TRIES\Filterable;
 
-use _20TRIES\Filterable\Adaptors\Interfaces\FilterableRequest;
+use _20TRIES\Filterable\Interfaces\FilterableRequest;
 use Symfony\Component\HttpFoundation\Request;
 use _20TRIES\Filterable\Exceptions\InvalidConfigurationException;
-use _20TRIES\Filterable\Param;
 
 /**
  * A request adaptor that adapts a request query to an Eloquent query.
@@ -21,11 +20,11 @@ class RequestToQueryAdaptor
      * @param mixed $query
      * @return mixed
      */
-    public function adapt(Request $request, $query)
+    public static function adapt(Request $request, $query)
     {
-        foreach ($this->getConfiguration($request) as $filter_key => $configuration) {
+        foreach (self::getConfiguration($request) as $filter_key => $configuration) {
             $method = $configuration[0];
-            $params = $this->getDataSetFromRequest($request, array_slice($configuration, 1));
+            $params = self::getDataSetFromRequest($request, array_slice($configuration, 1));
             $query = $method($query, ...$params);
         }
         return $query;
@@ -38,12 +37,12 @@ class RequestToQueryAdaptor
      * @return array
      * @throws InvalidConfigurationException
      */
-    public function getConfiguration(FilterableRequest $request)
+    public static function getConfiguration(FilterableRequest $request)
     {
         $raw_configurations = $request->scopes();
-        $configurations = $this->preCompile($raw_configurations);
-        $all_input = $this->getAllDataFromRequest($request);
-        $all_input_keys = $this->getArrayKeys($all_input);
+        $configurations = self::preCompile($raw_configurations);
+        $all_input = self::getAllDataFromRequest($request);
+        $all_input_keys = self::getArrayKeys($all_input);
         $parsed_configurations = [];
         foreach ($configurations as $key => $configuration) {
             // If the request params do not match the params provided in the filter key; continue.
@@ -71,7 +70,7 @@ class RequestToQueryAdaptor
      * @return array
      * @throws InvalidConfigurationException
      */
-    public function preCompile($configurations)
+    public static function preCompile($configurations)
     {
         $parsed_configurations = [];
         foreach ($configurations as $key => $configuration) {
@@ -119,7 +118,7 @@ class RequestToQueryAdaptor
      * @param null $default
      * @return mixed|null
      */
-    protected function getDataFromRequest(Request $request, $parameter, $default = null)
+    protected static function getDataFromRequest(Request $request, $parameter, $default = null)
     {
         $components = array_filter(explode('.', trim($parameter)));
         $input = $request->get(head($components));
@@ -140,12 +139,12 @@ class RequestToQueryAdaptor
      * @param array $parameters
      * @return array
      */
-    protected function getDataSetFromRequest(Request $request, $parameters)
+    protected static function getDataSetFromRequest(Request $request, $parameters)
     {
         $data = [];
         foreach ($parameters as $parameter) {
             $data[] = $parameter instanceof Param
-                ? $this->getDataFromRequest($request, $parameter->name())
+                ? self::getDataFromRequest($request, $parameter->name())
                 : $parameter;
         }
         return $data;
@@ -157,7 +156,7 @@ class RequestToQueryAdaptor
      * @param Request $request
      * @return array
      */
-    protected function getAllDataFromRequest(Request $request)
+    protected static function getAllDataFromRequest(Request $request)
     {
         return ($request->getMethod() == 'GET' ? $request->query : $request->request)->all();
     }
@@ -168,7 +167,7 @@ class RequestToQueryAdaptor
      * @param array $arr
      * @return array
      */
-    protected function getArrayKeys($arr) {
+    protected static function getArrayKeys($arr) {
         $keys = [];
         $sub_arrs = [['append' => '', 'data' => $arr]];
         while(! empty($sub_arrs)) {

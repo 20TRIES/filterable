@@ -2,9 +2,7 @@
 
 namespace _20TRIES\Filterable;
 
-use _20TRIES\Filterable\Adaptors\Interfaces\FilterableRequest;
-use _20TRIES\Filterable\Adaptors\RequestToQueryAdaptor;
-use Illuminate\Database\Eloquent\Model;
+use _20TRIES\Filterable\Interfaces\FilterableRequest;
 
 /**
  * A trait that includes the necessary implementation for making a controllers index action
@@ -18,11 +16,10 @@ trait Filterable
      * Builds a filtered query.
      *
      * @param FilterableRequest $request
-     * @param Model $model
+     * @param mixed $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function build(FilterableRequest $request, Model $model) {
-        $adaptor = new RequestToQueryAdaptor();
-        return $adaptor->adapt($request, $model->newQuery());
+    protected function build(FilterableRequest $request, $query) {
+        return RequestToQueryAdaptor::adapt($request, $query);
     }
 }
