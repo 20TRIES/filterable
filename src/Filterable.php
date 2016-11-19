@@ -19,7 +19,7 @@ trait Filterable
      * @param mixed $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function build(FilterableRequest $request, $query) {
+    protected function buildQuery(FilterableRequest $request, $query) {
         return RequestToQueryAdaptor::adapt($request, $query);
     }
 }
