@@ -158,7 +158,8 @@ class RequestToQueryAdaptor
      */
     protected static function getAllDataFromRequest(Request $request)
     {
-        return ($request->getMethod() == 'GET' ? $request->query : $request->request)->all();
+        $input_bag = $request->getMethod() == 'GET' ? $request->query : $request->request;
+        return $input_bag->all();
     }
 
     /**

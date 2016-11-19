@@ -11,17 +11,12 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 {
     public function test_that_array_config_a() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 45];
-            public function scopes() {
-                return [
-                    'bar' => function ($query) {
+        $request = new TestingRequest(['bar' => 45]);
+        $request->setScopes([
+            'bar' => function ($query) {
 
-                    },
-                ];
-            }
-        };
-
+            },
+        ]);
         $configurations = $adaptor->getConfiguration($request);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
@@ -37,16 +32,12 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function test_that_array_config_b() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 45];
-            public function scopes() {
-                return [
-                    'bar' => [function ($query) {
+        $request = new TestingRequest(['bar' => 45]);
+        $request->setScopes([
+            'bar' => [function ($query) {
 
-                    }],
-                ];
-            }
-        };
+            }],
+        ]);
 
         $configurations = $adaptor->getConfiguration($request);
         $this->assertInternalType('array', $configurations);
@@ -64,19 +55,15 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function test_that_array_config_c() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 45];
-            public function scopes() {
-                return [
-                    'bar' => [
-                        function ($query, $bar) {
+        $request = new TestingRequest(['bar' => 45]);
+        $request->setScopes([
+            'bar' => [
+                function ($query, $bar) {
 
-                        },
-                        new Param('bar')
-                    ],
-                ];
-            }
-        };
+                },
+                new Param('bar')
+            ],
+        ]);
 
         $configurations = $adaptor->getConfiguration($request);
         $this->assertInternalType('array', $configurations);
@@ -98,19 +85,15 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function test_that_array_config_d() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 45];
-            public function scopes() {
-                return [
-                    'bar' => [
-                        function ($query, $bar) {
+        $request = new TestingRequest(['bar' => 45]);
+        $request->setScopes([
+            'bar' => [
+                function ($query, $bar) {
 
-                        },
-                        20
-                    ],
-                ];
-            }
-        };
+                },
+                20
+            ],
+        ]);
 
         $configurations = $adaptor->getConfiguration($request);
         $this->assertInternalType('array', $configurations);
@@ -132,20 +115,16 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function test_that_array_config_e() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 45];
-            public function scopes() {
-                return [
-                    'bar' => [
-                        function ($query, $bar) {
+        $request = new TestingRequest(['bar' => 45]);
+        $request->setScopes([
+            'bar' => [
+                function ($query, $bar) {
 
-                        },
-                        new Param('bar'),
-                        20,
-                    ],
-                ];
-            }
-        };
+                },
+                new Param('bar'),
+                20,
+            ],
+        ]);
 
         $configurations = $adaptor->getConfiguration($request);
         $this->assertInternalType('array', $configurations);
@@ -171,20 +150,16 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function test_that_array_config_f() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 45];
-            public function scopes() {
-                return [
-                    'bar' => [
-                        function ($query, $bar) {
+        $request = new TestingRequest(['bar' => 45]);
+        $request->setScopes([
+            'bar' => [
+                function ($query, $bar) {
 
-                        },
-                        20,
-                        new Param('bar'),
-                    ],
-                ];
-            }
-        };
+                },
+                20,
+                new Param('bar'),
+            ],
+        ]);
 
         $configurations = $adaptor->getConfiguration($request);
         $this->assertInternalType('array', $configurations);
@@ -210,19 +185,15 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function test_that_array_config_g() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 45];
-            public function scopes() {
-                return [
-                    'bar' => [
-                        function ($query, $bar) {
+        $request = new TestingRequest(['bar' => 45]);
+        $request->setScopes([
+            'bar' => [
+                function ($query, $bar) {
 
-                        },
-                        'mock_param'
-                    ],
-                ];
-            }
-        };
+                },
+                'mock_param'
+            ],
+        ]);
 
         $configurations = $adaptor->getConfiguration($request);
         $this->assertInternalType('array', $configurations);
@@ -244,16 +215,12 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function test_scope_attributes_are_passed_to_model_method() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['bar' => 'baz'];
-            public function scopes() {
-                return [
-                    'bar' => [function($query, ...$args) {
-                        return $query->barScope(...$args);
-                    }, new Param('bar'), 35]
-                ];
-            }
-        };
+        $request = new TestingRequest(['bar' => 'baz']);
+        $request->setScopes([
+            'bar' => [function($query, ...$args) {
+                return $query->barScope(...$args);
+            }, new Param('bar'), 35]
+        ]);
         $query = $this
             ->getMockBuilder('MockClass')
             ->setMethods(['barScope'])

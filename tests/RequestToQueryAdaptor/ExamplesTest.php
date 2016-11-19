@@ -13,23 +13,19 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
      */
     public function test_example_ordering() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['order' => 'highest-rated'];
-            public function scopes() {
-                return [
-                    'order' => [function($query, $ordering) {
-                        switch($ordering) {
-                            case "highest-rated":
-                                return $query->orderBy('rating', 'desc');
-                                break;
-                            default:
-                                // Throw Exception
-                        };
-                        return $query;
-                    }, new Param('order')],
-                ];
-            }
-        };
+        $request = new TestingRequest(['order' => 'highest-rated']);
+        $request->setScopes([
+            'order' => [function($query, $ordering) {
+                switch($ordering) {
+                    case "highest-rated":
+                        return $query->orderBy('rating', 'desc');
+                        break;
+                    default:
+                        // Throw Exception
+                };
+                return $query;
+            }, new Param('order')],
+        ]);
         $query = $this
             ->getMockBuilder('MockClass')
             ->setMethods(['orderBy'])
@@ -44,14 +40,10 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
      */
     public function test_example_pagination() {
         $adaptor = new RequestToQueryAdaptor();
-        $request = new class() extends TestingRequest {
-            protected $input = ['page' => 10, 'limit' => 50];
-            public function scopes() {
-                return [
-                    'page,limit' => 'customPaginate(page, limit)',
-                ];
-            }
-        };
+        $request = new TestingRequest(['page' => 10, 'limit' => 50]);
+        $request->setScopes([
+            'page,limit' => 'customPaginate(page, limit)',
+        ]);
         $query = $this
             ->getMockBuilder('MockClass')
             ->setMethods(['customPaginate'])

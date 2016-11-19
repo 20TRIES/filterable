@@ -5,10 +5,22 @@ namespace _20TRIES\Test;
 use _20TRIES\Filterable\Interfaces\FilterableRequest;
 use \Symfony\Component\HttpFoundation\Request;
 
-abstract class TestingRequest extends Request  implements FilterableRequest  {
-    protected $input = [];
-    public function __construct(array $query = null, array $request = [], array $attributes = [], array $cookies = [], array $files = [], array $server = [], $content = '') {
-        $query = is_null($query) ? $this->input : $query;
-        parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
+class TestingRequest extends Request  implements FilterableRequest  {
+    protected $scopes = [];
+
+    public function __construct($query) {
+        parent::__construct($query, [], [], [], [], [], '');
+    }
+
+    public function setScopes($scopes) {
+        $this->scopes = $scopes;
+    }
+
+    public function scopes() {
+        return $this->scopes;
+    }
+
+    public function getMethod() {
+        return 'GET';
     }
 }
