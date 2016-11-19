@@ -6,7 +6,6 @@ use _20TRIES\Filterable\RequestToQueryAdaptor;
 use _20TRIES\Filterable\Param;
 use _20TRIES\Test\TestingRequest;
 use Closure;
-use Illuminate\Database\Eloquent\Builder;
 
 class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
 {
@@ -256,7 +255,7 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
             }
         };
         $query = $this
-            ->getMockBuilder(\Illuminate\Database\Eloquent\Builder::class)
+            ->getMockBuilder('MockClass')
             ->setMethods(['barScope'])
             ->disableOriginalConstructor()
             ->getMock();

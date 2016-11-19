@@ -5,7 +5,6 @@ namespace _20TRIES\Test\RequestToQueryAdaptor;
 use _20TRIES\Filterable\RequestToQueryAdaptor;
 use _20TRIES\Filterable\Param;
 use _20TRIES\Test\TestingRequest;
-use Illuminate\Database\Eloquent\Builder;
 
 class ExamplesTest extends \PHPUnit_Framework_TestCase
 {
@@ -32,7 +31,7 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
             }
         };
         $query = $this
-            ->getMockBuilder(Builder::class)
+            ->getMockBuilder('MockClass')
             ->setMethods(['orderBy'])
             ->disableOriginalConstructor()
             ->getMock();
@@ -54,7 +53,7 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
             }
         };
         $query = $this
-            ->getMockBuilder(Builder::class)
+            ->getMockBuilder('MockClass')
             ->setMethods(['customPaginate'])
             ->disableOriginalConstructor()
             ->getMock();

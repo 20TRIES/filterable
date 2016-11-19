@@ -17,7 +17,7 @@ trait Filterable
      *
      * @param FilterableRequest $request
      * @param mixed $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return mixed
      */
     protected function buildQuery(FilterableRequest $request, $query) {
         return RequestToQueryAdaptor::adapt($request, $query);

@@ -79,7 +79,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertInstanceOf(Closure::class, $configuration[0]);
 
             $this->assertArrayHasKey(1, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[1]);
+            $this->assertInstanceOf(Param::class, $configuration[1]);
             $this->assertAttributeEquals('bar', 'name', $configuration[1]);
         }
     }
@@ -124,11 +124,11 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertInstanceOf(Closure::class, $configuration[0]);
 
             $this->assertArrayHasKey(1, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[1]);
+            $this->assertInstanceOf(Param::class, $configuration[1]);
             $this->assertAttributeEquals('foo', 'name', $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('bar', 'name', $configuration[2]);
         }
     }
@@ -155,11 +155,11 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertInstanceOf(Closure::class, $configuration[0]);
 
             $this->assertArrayHasKey(1, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[1]);
+            $this->assertInstanceOf(Param::class, $configuration[1]);
             $this->assertAttributeEquals('bar', 'name', $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('foo', 'name', $configuration[2]);
         }
     }
@@ -211,7 +211,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals(25, $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('bar', 'name', $configuration[2]);
         }
     }
@@ -238,7 +238,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertInstanceOf(Closure::class, $configuration[0]);
 
             $this->assertArrayHasKey(1, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[1]);
+            $this->assertInstanceOf(Param::class, $configuration[1]);
             $this->assertAttributeEquals('bar', 'name', $configuration[1]);
             $this->assertArrayHasKey(2, $configuration);
             $this->assertInternalType('int', $configuration[2]);
@@ -272,7 +272,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals(25.1, $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('bar', 'name', $configuration[2]);
         }
     }
@@ -303,7 +303,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals(25, $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('bar', 'name', $configuration[2]);
         }
     }
@@ -334,7 +334,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals("25", $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('bar', 'name', $configuration[2]);
         }
     }
@@ -365,7 +365,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals("hello", $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('bar', 'name', $configuration[2]);
         }
     }
@@ -396,7 +396,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals("hello", $configuration[1]);
 
             $this->assertArrayHasKey(2, $configuration);
-            $this->assertInstanceOf(\_20TRIES\Filterable\Param::class, $configuration[2]);
+            $this->assertInstanceOf(Param::class, $configuration[2]);
             $this->assertAttributeEquals('bar', 'name', $configuration[2]);
         }
     }
@@ -412,7 +412,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             }
         };
         $query = $this
-            ->getMockBuilder(\Illuminate\Database\Eloquent\Builder::class)
+            ->getMockBuilder('MockClass')
             ->setMethods(['barScope'])
             ->disableOriginalConstructor()
             ->getMock();
