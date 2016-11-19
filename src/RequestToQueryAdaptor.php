@@ -5,7 +5,7 @@ namespace _20TRIES\Filterable;
 use _20TRIES\Filterable\Exceptions\InvalidConfigurationException;
 
 /**
- * A request adaptor that adapts a request query to an Eloquent query.
+ * Adapts user input to securely build a query.
  *
  * @package _20TRIES\Filterable\Adaptors
  */
@@ -14,7 +14,8 @@ class RequestToQueryAdaptor
     /**
      * Handles the adaption.
      *
-     * @param Request $request
+     * @param array $configuration
+     * @param array $input
      * @param mixed $query
      * @return mixed
      */
@@ -29,7 +30,7 @@ class RequestToQueryAdaptor
     }
 
     /**
-     * Gets the configuration for an adaptor, from a request.
+     * Parses a set of configuration rules.
      *
      * @param array $raw_configurations
      * @return array
@@ -60,9 +61,9 @@ class RequestToQueryAdaptor
     }
 
     /**
-     * Pre-compiles a set of scope configurations.
+     * Pre-compiles a set of configuration rules.
      *
-     * @param $configurations
+     * @param array $configurations
      * @return array
      * @throws InvalidConfigurationException
      */
@@ -108,31 +109,33 @@ class RequestToQueryAdaptor
 
     /**
      * Gets a parameter from a request.
-     *$components
+     *
      * @param array $arr
      * @param string $parameter
      * @param null $default
-     * @return mixed|null
+     * @return null
      */
     protected static function arrGet($arr, $parameter, $default = null)
     {
         $components = array_filter(explode('.', trim($parameter)));
         $head = array_shift($components);
-        $input = array_key_exists($head, $arr) ? $arr[$head] : [];
-        foreach ($components as $component) {
-            if (array_key_exists($component, $input)) {
-                $input = $input[$component];
-            } else {
-                return $default;
+        $input = array_key_exists($head, $arr) ? $arr[$head] : $default;
+        if (! is_null($input)) {
+            foreach ($components as $component) {
+                if (array_key_exists($component, $input)) {
+                    $input = $input[$component];
+                } else {
+                    return $default;
+                }
             }
         }
         return $input;
     }
 
     /**
-     * Gets a set of parameters from a request.
+     * Gets a set of attribute from an array using "dot notation".
      *
-     * @param Request $request
+     * @param array $arr
      * @param array $attributes
      * @return array
      */
