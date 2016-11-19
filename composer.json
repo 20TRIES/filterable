@@ -7,8 +7,7 @@
     "homepage": "https://github.com/20tries/filterable",
     "license": "MIT",
     "require": {
-        "php" : ">=5.6",
-        "illuminate/http": "5.3.*"
+        "php" : ">=5.6"
     },
     "require-dev": {
         "php" : ">=5.6",

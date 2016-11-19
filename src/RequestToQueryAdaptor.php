@@ -2,8 +2,6 @@
 
 namespace _20TRIES\Filterable;
 
-use _20TRIES\Filterable\Interfaces\FilterableRequest;
-use Symfony\Component\HttpFoundation\Request;
 use _20TRIES\Filterable\Exceptions\InvalidConfigurationException;
 
 /**
@@ -20,11 +18,11 @@ class RequestToQueryAdaptor
      * @param mixed $query
      * @return mixed
      */
-    public static function adapt(Request $request, $query)
+    public static function adapt($configuration, $input, $query)
     {
-        foreach (self::getConfiguration($request) as $filter_key => $configuration) {
+        foreach (self::parseConfiguration($configuration, $input) as $filter_key => $configuration) {
             $method = $configuration[0];
-            $params = self::getDataSetFromRequest($request, array_slice($configuration, 1));
+            $params = self::arrOnly($input, array_slice($configuration, 1));
             $query = $method($query, ...$params);
         }
         return $query;
@@ -33,16 +31,14 @@ class RequestToQueryAdaptor
     /**
      * Gets the configuration for an adaptor, from a request.
      *
-     * @param FilterableRequest $request
+     * @param array $raw_configurations
      * @return array
      * @throws InvalidConfigurationException
      */
-    public static function getConfiguration(FilterableRequest $request)
+    public static function parseConfiguration($raw_configurations, $all_input)
     {
-        $raw_configurations = $request->scopes();
         $configurations = self::preCompile($raw_configurations);
-        $all_input = self::getAllDataFromRequest($request);
-        $all_input_keys = self::getArrayKeys($all_input);
+        $all_input_keys = self::arrKeys($all_input);
         $parsed_configurations = [];
         foreach ($configurations as $key => $configuration) {
             // If the request params do not match the params provided in the filter key; continue.
@@ -112,17 +108,18 @@ class RequestToQueryAdaptor
 
     /**
      * Gets a parameter from a request.
-     *
-     * @param Request $request
+     *$components
+     * @param array $arr
      * @param string $parameter
      * @param null $default
      * @return mixed|null
      */
-    protected static function getDataFromRequest(Request $request, $parameter, $default = null)
+    protected static function arrGet($arr, $parameter, $default = null)
     {
         $components = array_filter(explode('.', trim($parameter)));
-        $input = $request->get(head($components));
-        foreach (array_slice($components, 1) as $component) {
+        $head = array_shift($components);
+        $input = array_key_exists($head, $arr) ? $arr[$head] : [];
+        foreach ($components as $component) {
             if (array_key_exists($component, $input)) {
                 $input = $input[$component];
             } else {
@@ -136,30 +133,18 @@ class RequestToQueryAdaptor
      * Gets a set of parameters from a request.
      *
      * @param Request $request
-     * @param array $parameters
+     * @param array $attributes
      * @return array
      */
-    protected static function getDataSetFromRequest(Request $request, $parameters)
+    protected static function arrOnly($arr, $attributes)
     {
         $data = [];
-        foreach ($parameters as $parameter) {
+        foreach ($attributes as $parameter) {
             $data[] = $parameter instanceof Param
-                ? self::getDataFromRequest($request, $parameter->name())
+                ? self::arrGet($arr, $parameter->name())
                 : $parameter;
         }
         return $data;
-    }
-
-    /**
-     * Gets all data from a request.
-     *
-     * @param Request $request
-     * @return array
-     */
-    protected static function getAllDataFromRequest(Request $request)
-    {
-        $input_bag = $request->getMethod() == 'GET' ? $request->query : $request->request;
-        return $input_bag->all();
     }
 
     /**
@@ -168,7 +153,7 @@ class RequestToQueryAdaptor
      * @param array $arr
      * @return array
      */
-    protected static function getArrayKeys($arr) {
+    protected static function arrKeys($arr) {
         $keys = [];
         $sub_arrs = [['append' => '', 'data' => $arr]];
         while(! empty($sub_arrs)) {
