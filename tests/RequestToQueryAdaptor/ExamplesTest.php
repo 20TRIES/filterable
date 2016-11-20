@@ -45,4 +45,42 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
             'page,limit' => 'customPaginate(page, limit)',
         ], ['page' => 10, 'limit' => 50], $query);
     }
+
+    /**
+     * @group examples
+     */
+    public function test_example_pagination_with_sets_configured() {
+        $query = $this
+            ->getMockBuilder('MockClass')
+            ->setMethods(['customPaginate'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $query->expects($this->once())->method('customPaginate')->with(10, 15)->willReturnSelf();
+        RequestToQueryAdaptor::adapt([
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+                'page'       => 'customPaginate(page, 15)',
+                'limit'      => 'customPaginate(1, limit)',
+                ''           => 'customPaginate(1, 15)',
+            ]
+        ], ['page' => 10], $query);
+    }
+
+    /**
+     * @group examples
+     */
+    public function test_example_fixed_limit_pagination_with_sets_configured() {
+        $query = $this
+            ->getMockBuilder('MockClass')
+            ->setMethods(['customPaginate'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $query->expects($this->once())->method('customPaginate')->with(10, 15)->willReturnSelf();
+        RequestToQueryAdaptor::adapt([
+            [
+                'page' => 'customPaginate(page, 15)',
+                ''     => 'customPaginate(1, 15)',
+            ]
+        ], ['page' => 10, 'limit' => 999999999], $query);
+    }
 }
