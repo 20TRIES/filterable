@@ -105,5 +105,18 @@ class FilterSetsTest extends PHPUnit_Framework_TestCase
         RequestToQueryAdaptor::adapt($configuration, $input, $query);
     }
 
-    // test_patterns_match_in_order
+    public function test_patterns_match_in_order() {
+        $input = ['page' => 2, 'limit' => 5];
+        $configuration = [
+            [
+                'page'       => 'customPaginate(page, 15)',
+                'page,limit' => 'customPaginate(page, limit)',
+                'limit'      => 'customPaginate(1, limit)',
+                ''           => 'customPaginate(1, 15)',
+            ],
+        ];
+        $query = $this->getMockBuilder('MockObject')->setMethods(['customPaginate'])->getMock();
+        $query->expects($this->once())->method('customPaginate')->with(2, 15)->willReturnSelf();
+        RequestToQueryAdaptor::adapt($configuration, $input, $query);
+    }
 }
