@@ -41,22 +41,71 @@ class RequestToQueryAdaptor
         $configurations = self::preCompile($raw_configurations);
         $all_input_keys = self::arrKeys($all_input);
         $parsed_configurations = [];
-        foreach ($configurations as $key => $configuration) {
-            // If the request params do not match the params provided in the filter key; continue.
-            $name_params = array_filter(explode(',', $key));
-            $intersection = array_intersect($all_input_keys, $name_params);
-            sort($intersection);
-            if ($intersection != $name_params) {
+
+        // Separate configuration sets
+        $sets = [];
+        $expanded_configurations = [];
+        foreach($configurations as $key => $configuration) {
+            if (is_numeric($key)) {
+                $sets[] = $configuration;
+            } else {
+                $expanded_configurations[$key] = $configuration;
+            }
+        }
+
+        // Expand configuration sets into main configuration
+        foreach ($sets as $configuration) {
+            $matched = false;
+            foreach ($configuration as $configuration_item_key => $configuration_item) {
+                if (empty($configuration_item_key) && $matched === false) {
+                    $expanded_configurations[] = $configuration_item;
+                    $matched = true;
+                } elseif(array_key_exists($configuration_item_key, $expanded_configurations)) {
+
+                    // @TODO This should be catchable at the compilation stage
+
+                    throw new InvalidConfigurationException('Duplicated filter');
+                } else {
+                    // If the request params do not match the params provided in the filter key; continue.
+                    $name_params = array_filter(explode(',', $configuration_item_key));
+                    $intersection = array_intersect($all_input_keys, $name_params);
+                    sort($intersection);
+                    if ($intersection === $name_params && $matched === false) {
+                        $expanded_configurations[$configuration_item_key] = $configuration_item;
+                        $matched = true;
+                    } else {
+                        $expanded_configurations[$configuration_item_key] = null;
+                    }
+                }
+            }
+        }
+
+        foreach ($expanded_configurations as $key => $configuration) {
+            // Skip empty configurations.
+            if (empty($configuration)) {
                 continue;
             }
-            $input_keys = array_intersect($all_input_keys, $name_params);
+
+            if (! is_numeric($key)) {
+                // If the request params do not match the params provided in the filter key; continue.
+                $name_params = array_filter(explode(',', $key));
+                $intersection = array_intersect($all_input_keys, $name_params);
+                sort($intersection);
+                if ($intersection != $name_params) {
+                    continue;
+                }
+            }
+
+            $input_keys = isset($name_params) ? array_intersect($all_input_keys, $name_params) : [];
             foreach (array_slice($configuration, 1) as $param) {
-                if ($param  instanceof Param && !in_array($param->name(), $input_keys)) {
+                if ($param instanceof Param && !in_array($param->name(), $input_keys)) {
                     throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
                 }
             }
+
             $parsed_configurations[$key] = $configuration;
         }
+
         return $parsed_configurations;
     }
 
@@ -67,7 +116,7 @@ class RequestToQueryAdaptor
      * @return array
      * @throws InvalidConfigurationException
      */
-    public static function preCompile($configurations)
+    public static function preCompile($configurations, $deep = true)
     {
         $parsed_configurations = [];
         foreach ($configurations as $key => $configuration) {
@@ -99,7 +148,9 @@ class RequestToQueryAdaptor
                     $parsed_configurations[$parsed_key][] = $param;
                 }
             } elseif(is_callable($configuration)) {
-                $parsed_configurations[$key] = [$configuration];
+                $parsed_configurations[$parsed_key] = [$configuration];
+            } elseif(is_numeric($key) && $deep === true) {
+                $parsed_configurations[] = self::preCompile($configuration, false);
             } else {
                 $parsed_configurations[$parsed_key] = $configuration;
             }
