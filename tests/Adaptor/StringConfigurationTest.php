@@ -2,14 +2,15 @@
 
 namespace _20TRIES\Test\RequestToQueryAdaptor;
 
-use _20TRIES\Filterable\RequestToQueryAdaptor;
+use _20TRIES\Filterable\Adaptor;
 use _20TRIES\Filterable\Param;
 use Closure;
+use PHPUnit_Framework_TestCase;
 
-class StringConfigurationTest extends \PHPUnit_Framework_TestCase
+class StringConfigurationTest extends PHPUnit_Framework_TestCase
 {
     public function test_that_string_config_a() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => 'barScope'
         ], ['bar' => []]);
         $this->assertInternalType('array', $configurations);
@@ -26,7 +27,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_a_2() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['bar' => 'barScope()'], ['bar' => 'foo']);
+        $configurations = (new Adaptor())->parseConfiguration(['bar' => 'barScope()'], ['bar' => 'foo']);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -41,7 +42,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_b() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['bar' => 'barScope(bar)'], ['bar' => 25]);
+        $configurations = (new Adaptor())->parseConfiguration(['bar' => 'barScope(bar)'], ['bar' => 25]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -64,13 +65,13 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
      * @expectedExceptionMessage Scope parameters must be included within the configuration key
      */
     public function test_that_string_config_c() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['bar' => 'barScope(foo)'], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['bar' => 'barScope(foo)'], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertEmpty($configurations);
     }
 
     public function test_that_string_config_d() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => 'barScope(foo,bar)'], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(foo,bar)'], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -93,7 +94,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_e() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => 'barScope(bar,foo)'], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(bar,foo)'], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -120,7 +121,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
      * @expectedExceptionMessage Duplicated filter
      */
     public function test_that_string_config_f() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'foo,bar' => 'barScope(bar,foo)',
             'bar,foo' => 'barScope(bar,foo)',
         ], ['bar' => 25, 'foo' => 30]);
@@ -129,7 +130,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_g() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => 'barScope(25,bar)'], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(25,bar)'], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -152,7 +153,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_h() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => 'barScope(bar, 25)'], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(bar, 25)'], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -174,7 +175,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_i() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => 'barScope(25.1,bar)'], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(25.1,bar)'], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -197,7 +198,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_j() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => 'barScope(25,bar)'], ['bar' => 25, 'foo' => 30, '25' => 35]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(25,bar)'], ['bar' => 25, 'foo' => 30, '25' => 35]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -220,7 +221,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_k() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => 'barScope("25",bar)'], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope("25",bar)'], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -243,7 +244,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_l() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => "barScope('hello',bar)"], ['bar' => 25, 'foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => "barScope('hello',bar)"], ['bar' => 25, 'foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -266,7 +267,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_m() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo,bar' => "barScope('hello',bar)"], ['bar' => 25, 'foo' => 30, 'hello' => 35]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => "barScope('hello',bar)"], ['bar' => 25, 'foo' => 30, 'hello' => 35]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -295,13 +296,13 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('barScope')->with('baz', 35)->willReturnSelf();
-        RequestToQueryAdaptor::adapt([
+        (new Adaptor())->adapt([
             'bar' => 'barScope(bar, 35)'
         ], ['bar' => 'baz'], $query);
     }
 
     public function test_that_string_config_n() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo' => "barScope(true)"], ['foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo' => "barScope(true)"], ['foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -320,7 +321,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_o() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo' => "barScope(false)"], ['foo' => 30]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo' => "barScope(false)"], ['foo' => 30]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -339,7 +340,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_p() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo' => "barScope(false)"], ['foo' => 30, 'true' => 40]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo' => "barScope(false)"], ['foo' => 30, 'true' => 40]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
 
@@ -358,7 +359,7 @@ class StringConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_q() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration(['foo.bar' => "barScope(foo.bar)"], ['foo' => ['bar' => 1, 'baz' => 2]]);
+        $configurations = (new Adaptor())->parseConfiguration(['foo.bar' => "barScope(foo.bar)"], ['foo' => ['bar' => 1, 'baz' => 2]]);
         $this->assertInternalType('array', $configurations);
         $this->assertNotEmpty($configurations);
         foreach ($configurations as $filter => $configuration) {

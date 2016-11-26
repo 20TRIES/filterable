@@ -1,15 +1,16 @@
 <?php
 
-namespace _20TRIES\Test\RequestToQueryAdaptor;
+namespace _20TRIES\Test\InputToQueryAdaptor;
 
-use _20TRIES\Filterable\RequestToQueryAdaptor;
+use _20TRIES\Filterable\Adaptor;
 use _20TRIES\Filterable\Param;
 use Closure;
+use PHPUnit_Framework_TestCase;
 
-class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
+class ArrayConfigurationTest extends PHPUnit_Framework_TestCase
 {
     public function test_that_array_config_a() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => function ($query) {
 
             },
@@ -27,7 +28,7 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_array_config_b() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => [function ($query) {
 
             }],
@@ -46,7 +47,7 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_array_config_c() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => [
                 function ($query, $bar) {
 
@@ -73,7 +74,7 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_array_config_d() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => [
                 function ($query, $bar) {
 
@@ -100,7 +101,7 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_array_config_e() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => [
                 function ($query, $bar) {
 
@@ -132,7 +133,7 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_array_config_f() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => [
                 function ($query, $bar) {
 
@@ -164,7 +165,7 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_that_array_config_g() {
-        $configurations = RequestToQueryAdaptor::parseConfiguration([
+        $configurations = (new Adaptor())->parseConfiguration([
             'bar' => [
                 function ($query, $bar) {
 
@@ -191,16 +192,15 @@ class ArrayConfigurationTest extends \PHPUnit_Framework_TestCase
     }
 
     public function test_scope_attributes_are_passed_to_model_method() {
-        $query = $this
-            ->getMockBuilder('MockClass')
-            ->setMethods(['barScope'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $query = $this->getMockBuilder('MockClass')->setMethods(['barScope'])->getMock();
         $query->expects($this->once())->method('barScope')->with('baz', 35)->willReturnSelf();
-        RequestToQueryAdaptor::adapt([
-            'bar' => [function($query, ...$args) {
-                return $query->barScope(...$args);
-            }, new Param('bar'), 35]
-        ], ['bar' => 'baz'], $query);
+        $closure = function($query, ...$args) {
+            return $query->barScope(...$args);
+        };
+        $configuration = [
+            'bar' => [$closure, new Param('bar'), 35]
+        ];
+        $input = ['bar' => 'baz'];
+        (new Adaptor())->adapt($configuration, $input, $query);
     }
 }

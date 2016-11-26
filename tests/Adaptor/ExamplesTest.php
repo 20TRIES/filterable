@@ -2,10 +2,11 @@
 
 namespace _20TRIES\Test\RequestToQueryAdaptor;
 
-use _20TRIES\Filterable\RequestToQueryAdaptor;
+use _20TRIES\Filterable\Adaptor;
 use _20TRIES\Filterable\Param;
+use PHPUnit_Framework_TestCase;
 
-class ExamplesTest extends \PHPUnit_Framework_TestCase
+class ExamplesTest extends PHPUnit_Framework_TestCase
 {
     /**
      * @group examples
@@ -17,7 +18,7 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('orderBy')->with('rating', 'desc')->willReturnSelf();
-        RequestToQueryAdaptor::adapt([
+        (new Adaptor())->adapt([
             'order' => [function($query, $ordering) {
                 switch($ordering) {
                     case "highest-rated":
@@ -41,7 +42,7 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('customPaginate')->with(10, 50)->willReturnSelf();
-        RequestToQueryAdaptor::adapt([
+        (new Adaptor())->adapt([
             'page,limit' => 'customPaginate(page, limit)',
         ], ['page' => 10, 'limit' => 50], $query);
     }
@@ -56,7 +57,7 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('customPaginate')->with(10, 15)->willReturnSelf();
-        RequestToQueryAdaptor::adapt([
+        (new Adaptor())->adapt([
             [
                 'page,limit' => 'customPaginate(page, limit)',
                 'page'       => 'customPaginate(page, 15)',
@@ -76,7 +77,7 @@ class ExamplesTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('customPaginate')->with(10, 15)->willReturnSelf();
-        RequestToQueryAdaptor::adapt([
+        (new Adaptor())->adapt([
             [
                 'page' => 'customPaginate(page, 15)',
                 ''     => 'customPaginate(1, 15)',
