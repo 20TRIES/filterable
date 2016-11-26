@@ -42,25 +42,25 @@ class FilterSetsTest extends PHPUnit_Framework_TestCase
         (new Adaptor)->adapt($configuration, $input, $query);
     }
 
-//    /**
-//     * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
-//     * @expectedExceptionMessage Duplicated filter
-//     */
-//    public function test_that_configuration_sets_trigger_duplicate_exceptions_with_sets() {
-//        $input = [];
-//        $configuration = [
-//            [
-//                'page,limit' => 'customPaginate(page, limit)',
-//            ],
-//            [
-//                'page,limit' => 'customPaginate(page, limit)',
-//                'page'       => 'customPaginate(page, 15)',
-//                'limit'      => 'customPaginate(1, limit)',
-//            ],
-//        ];
-//        $query = $this->getMockBuilder('MockObject')->getMock();
-//        (new Adaptor)->adapt($configuration, $input, $query);
-//    }
+    /**
+     * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
+     * @expectedExceptionMessage Duplicated filter
+     */
+    public function test_that_configuration_sets_trigger_duplicate_exceptions_with_sets() {
+        $input = [];
+        $configuration = [
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+            ],
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+                'page'       => 'customPaginate(page, 15)',
+                'limit'      => 'customPaginate(1, limit)',
+            ],
+        ];
+        $query = $this->getMockBuilder('MockObject')->getMock();
+        (new Adaptor)->adapt($configuration, $input, $query);
+    }
 
     // No exception should be thrown.
     public function test_that_set_wildcards_do_not_trigger_duplicated_exceptions() {

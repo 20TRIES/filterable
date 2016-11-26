@@ -43,6 +43,9 @@ class Compiler
                         throw new InvalidConfigurationException('Duplicated filter');
                     }
                     $set[$configuration_item_key] = $configuration_item;
+
+                    // Set null element in main configuration set (to catch duplicates) PLACEHOLDER
+                    $configurations[$configuration_item_key] = null;
                 }
 
                 $configurations[$key] = [];
@@ -96,6 +99,8 @@ class Compiler
             }
         }
 
-        return $parsed_configurations;
+        // Apply array filter to parsed configurations to remove placeholders
+
+        return array_filter($parsed_configurations);
     }
 }
