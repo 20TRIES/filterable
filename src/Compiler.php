@@ -52,8 +52,10 @@ class Compiler
 
                 $input_keys = array_unique($params);
 
-                $configurations[$key][] = function ($query, ...$input) use ($set, $input_keys) {
-                    return $this->adaptor->adaptSet($this->compile($set), array_filter(array_combine($input_keys, $input)), $query);
+                $compiled_set = $this->compile($set);
+
+                $configurations[$key][] = function ($query, ...$input) use ($compiled_set, $input_keys) {
+                    return $this->adaptor->adaptSet($compiled_set, array_filter(array_combine($input_keys, $input)), $query);
                 };
                 foreach ($input_keys as $name) {
                     $configurations[$key][] = new Param($name);
