@@ -117,7 +117,7 @@ class StringTest extends PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
-     * @expectedExceptionMessage Duplicated filter
+     * @expectedExceptionMessage Duplicated configuration item
      */
     public function test_that_string_config_f() {
         $config = [
@@ -386,7 +386,7 @@ class StringTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(3, count($compiled[0]));
 
         $this->assertInstanceOf(Closure::class, $compiled[0][0]);
-        $query = new \stdClass();
+        $query = new \stdClass;
         $compiled[0][0]($query, 1, 50);
 
         $this->assertInstanceOf(Param::class, $compiled[0][1]);
@@ -394,5 +394,56 @@ class StringTest extends PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(Param::class, $compiled[0][2]);
         $this->assertAttributeEquals('limit', 'name', $compiled[0][2]);
+    }
+
+    /**
+     * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
+     * @expectedExceptionMessage Duplicated configuration item
+     */
+    public function test_that_configuration_sets_trigger_duplicate_exceptions_with_non_sets() {
+        $config = [
+            'page,limit' => 'fooBar()',
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+                'page'       => 'customPaginate(page, 15)',
+                'limit'      => 'customPaginate(1, limit)',
+            ],
+        ];
+        (new Compiler)->compile($config);
+    }
+
+    /**
+     * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
+     * @expectedExceptionMessage Duplicated configuration item
+     */
+    public function test_that_configuration_sets_trigger_duplicate_exceptions_with_sets() {
+        $config = [
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+            ],
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+                'page'       => 'customPaginate(page, 15)',
+                'limit'      => 'customPaginate(1, limit)',
+            ],
+        ];
+        (new Compiler)->compile($config);
+    }
+
+    // No exception should be thrown.
+    public function test_that_set_wildcards_do_not_trigger_duplicated_exceptions() {
+        $config = [
+            [
+                'foo,bar' => 'fooBar(foo, bar)',
+                ''        => 'fooBar()',
+            ],
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+                'page'       => 'customPaginate(page, 15)',
+                'limit'      => 'customPaginate(1, limit)',
+                ''           => 'customPaginate(1, 15)',
+            ],
+        ];
+        (new Compiler)->compile($config);
     }
 }

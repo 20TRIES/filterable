@@ -15,6 +15,11 @@ class Compiler
     protected $adaptor;
 
     /**
+     * @var string
+     */
+    protected $default_key = '';
+
+    /**
      * Constructor.
      *
      * @param null $adaptor
@@ -27,65 +32,26 @@ class Compiler
     /**
      * Compiles array of configuration sets.
      *
-     * @param $configurations
+     * @param $configs
      * @return array
      * @throws InvalidConfigurationException
      */
-    public function compile($configurations)
+    public function compile($configs)
     {
-
-        foreach($configurations as $key => $configuration) {
-
-            // Expand configuration sets into main configuration
+        // Compile configuration sets.
+        foreach($configs as $key => $configuration) {
             if (is_numeric($key)) {
-                $matched = false;
-                $set = [];
-                $params = [];
-                foreach ($configuration as $configuration_item_key => $configuration_item) {
-
-                    // If we reach the default element
-                    if ($configuration_item_key === "" && $matched === false) {
-                        $set[$configuration_item_key] = $configuration_item;
-                        $matched = true;
-                        continue;
-                    }
-
-                    $name_params = array_filter(explode(',', $configuration_item_key));
-
-                    array_push($params, ...$name_params);
-
-                    // If the key matches one already present in the main configuration set
-                    if(array_key_exists($configuration_item_key, $configurations)) {
-                        throw new InvalidConfigurationException('Duplicated filter');
-                    }
-                    $set[$configuration_item_key] = $configuration_item;
-
-                    // Set null element in main configuration set (to catch duplicates) PLACEHOLDER
-                    $configurations[$configuration_item_key] = null;
-                }
-
-                $configurations[$key] = [];
-
-                $input_keys = array_unique($params);
-
-                $compiled_set = $this->compile($set);
-
-                $configurations[$key][] = function ($query, ...$input) use ($compiled_set, $input_keys) {
-                    return $this->adaptor->adaptSet($compiled_set, array_filter(array_combine($input_keys, $input)), $query);
-                };
-                foreach ($input_keys as $name) {
-                    $configurations[$key][] = new Param($name);
-                }
+                $configs[$key] = $this->wrapFilterSet($configuration, $configs);
             }
         }
 
         $parsed_configurations = [];
-        foreach ($configurations as $key => $configuration) {
+        foreach ($configs as $key => $configuration) {
             $name_params = array_filter(explode(',', $key));
             sort($name_params);
             $parsed_key = trim(implode(',', $name_params));
             if (array_key_exists($parsed_key, $parsed_configurations)) {
-                throw new InvalidConfigurationException('Duplicated filter');
+                throw new InvalidConfigurationException('Duplicated configuration item');
             }
 
             if (is_string($configuration)) {
@@ -120,8 +86,54 @@ class Compiler
             }
         }
 
-        // Apply array filter to parsed configurations to remove placeholders
-
+        // Return compiled configuration filtered of any placeholders (null elements).
         return array_filter($parsed_configurations);
+    }
+
+    /**
+     * Wraps a filter set into a compiled configuration item and generates placeholder items for sub-items within the
+     * set.
+     *
+     * @param array $set
+     * @param array $configs
+     * @return array
+     * @throws InvalidConfigurationException
+     */
+    protected function wrapFilterSet($set, &$configs)
+    {
+        $compiled_set = $this->compile($set);
+        $wrapped_set = [];
+        $params = [];
+
+        foreach ($set as $key => $config) {
+            if ($key !== $this->default_key) {
+                array_push($params, ...array_filter(explode(',', $key)));
+
+                // If the key matches one already present in the main configuration set
+                if(array_key_exists($key, $configs)) {
+                    throw new InvalidConfigurationException('Duplicated configuration item');
+                }
+
+                // Set placeholder element in main configuration set to catch duplicates
+                $configs[$key] = null;
+            }
+        }
+
+        // Add callback to wrapper configuration item
+        $input_keys = array_unique($params);
+        $wrapped_set[] = function ($query, ...$input) use ($compiled_set, $input_keys) {
+            // Combine input keys with input provided via parameters.
+            $input = array_combine($input_keys, $input);
+
+            // Adapt the query using the compiled configuration set.
+            return $this->adaptor->adaptSet($compiled_set, array_filter($input), $query);
+        };
+
+        // Add parameters to wrapper configuration item
+        foreach ($input_keys as $name) {
+            $wrapped_set[] = new Param($name);
+        }
+
+        return $wrapped_set;
     }
 }

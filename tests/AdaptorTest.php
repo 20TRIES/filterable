@@ -17,7 +17,7 @@ class AdaptorTest extends PHPUnit_Framework_TestCase
             'bar' => [$closure, new Param('bar'), 35]
         ];
         $input = ['bar' => 'baz'];
-        $compiled = (new Compiler())->compile($config);
+        $compiled = (new Compiler)->compile($config);
         (new Adaptor())->adapt($compiled, $input, $query);
     }
 
@@ -32,7 +32,7 @@ class AdaptorTest extends PHPUnit_Framework_TestCase
             'bar' => 'barScope(bar, 35)'
         ];
         $input = ['bar' => 'baz'];
-        $compiled = (new Compiler())->compile($config);
+        $compiled = (new Compiler)->compile($config);
         (new Adaptor())->adapt($compiled, $input, $query);
     }
 
@@ -48,71 +48,9 @@ class AdaptorTest extends PHPUnit_Framework_TestCase
                 ''           => 'customPaginate(1, 15)',
             ],
         ];
-        $compiled = (new Compiler())->compile($config);
+        $compiled = (new Compiler)->compile($config);
         $query = $this->getMockBuilder('MockObject')->setMethods(['customPaginate'])->getMock();
         $query->expects($this->once())->method('customPaginate')->with(1, 15)->willReturnSelf();
-        (new Adaptor)->adapt($compiled, $input, $query);
-    }
-
-    /**
-     * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
-     * @expectedExceptionMessage Duplicated filter
-     */
-    public function test_that_configuration_sets_trigger_duplicate_exceptions_with_non_sets() {
-        $input = [];
-        $config = [
-            'page,limit' => 'fooBar()',
-            [
-                'page,limit' => 'customPaginate(page, limit)',
-                'page'       => 'customPaginate(page, 15)',
-                'limit'      => 'customPaginate(1, limit)',
-            ],
-        ];
-        $compiled = (new Compiler())->compile($config);
-        $query = $this->getMockBuilder('MockObject')->getMock();
-        (new Adaptor)->adapt($compiled, $input, $query);
-    }
-
-    /**
-     * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
-     * @expectedExceptionMessage Duplicated filter
-     */
-    public function test_that_configuration_sets_trigger_duplicate_exceptions_with_sets() {
-        $input = [];
-        $config = [
-            [
-                'page,limit' => 'customPaginate(page, limit)',
-            ],
-            [
-                'page,limit' => 'customPaginate(page, limit)',
-                'page'       => 'customPaginate(page, 15)',
-                'limit'      => 'customPaginate(1, limit)',
-            ],
-        ];
-        $compiled = (new Compiler())->compile($config);
-        $query = $this->getMockBuilder('MockObject')->getMock();
-        (new Adaptor)->adapt($compiled, $input, $query);
-    }
-
-    // No exception should be thrown.
-    public function test_that_set_wildcards_do_not_trigger_duplicated_exceptions() {
-        $input = [];
-        $config = [
-            [
-                'foo,bar' => 'fooBar(foo, bar)',
-                ''        => 'fooBar()',
-            ],
-            [
-                'page,limit' => 'customPaginate(page, limit)',
-                'page'       => 'customPaginate(page, 15)',
-                'limit'      => 'customPaginate(1, limit)',
-                ''           => 'customPaginate(1, 15)',
-            ],
-        ];
-        $compiled = (new Compiler())->compile($config);
-        $query = $this->getMockBuilder('MockObject')->setMethods(['customPaginate', 'fooBar'])->getMock();
-        $query->expects($this->once())->method('customPaginate')->with(1, 15)->willReturnSelf();
-        $query->expects($this->once())->method('fooBar')->with()->willReturnSelf();
         (new Adaptor)->adapt($compiled, $input, $query);
     }
 
@@ -126,7 +64,7 @@ class AdaptorTest extends PHPUnit_Framework_TestCase
                 ''           => 'customPaginate(1, 15)',
             ],
         ];
-        $compiled = (new Compiler())->compile($config);
+        $compiled = (new Compiler)->compile($config);
         $query = $this->getMockBuilder('MockObject')->setMethods(['customPaginate'])->getMock();
         $query->expects($this->once())->method('customPaginate')->with(2, 5)->willReturnSelf();
         (new Adaptor)->adapt($compiled, $input, $query);
@@ -142,7 +80,7 @@ class AdaptorTest extends PHPUnit_Framework_TestCase
                 ''           => 'customPaginate(1, 15)',
             ],
         ];
-        $compiled = (new Compiler())->compile($config);
+        $compiled = (new Compiler)->compile($config);
         $query = $this->getMockBuilder('MockObject')->setMethods(['customPaginate'])->getMock();
         $query->expects($this->once())->method('customPaginate')->with(2, 15)->willReturnSelf();
         (new Adaptor)->adapt($compiled, $input, $query);
