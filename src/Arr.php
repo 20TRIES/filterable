@@ -3,6 +3,8 @@
 /**
  * Helper class for interacting with arrays in a simple and clean way.
  *
+ * Supports "dot notation".
+ *
  * @package _20TRIES\Filterable
  */
 class Arr
@@ -30,6 +32,25 @@ class Arr
             }
         }
         return $input;
+    }
+
+    /**
+     * Determines whether an array has a given key.
+     *
+     * @param array $arr
+     * @param string $key
+     * @return bool
+     */
+    public static function has($arr, $key) {
+        $components = array_filter(explode('.', trim($key)));
+        foreach ($components as $component) {
+            if (array_key_exists(trim($component), $arr)) {
+                $arr = $arr[$component];
+            } else {
+                return false;
+            }
+        }
+        return ! empty($components);
     }
 
     /**
