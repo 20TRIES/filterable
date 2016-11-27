@@ -41,7 +41,8 @@ class Arr
      * @param string $key
      * @return bool
      */
-    public static function has($arr, $key) {
+    public static function has($arr, $key)
+    {
         $components = array_filter(explode('.', trim($key)));
         foreach ($components as $component) {
             if (array_key_exists(trim($component), $arr)) {
@@ -74,6 +75,7 @@ class Arr
     /**
      * Gets the keys available in a "dot notation" array.
      *
+     * @param array $arr
      * @return array
      */
     public static function keys($arr)
@@ -99,7 +101,8 @@ class Arr
     /**
      * Determines whether an array contains a value(s).
      *
-     * @param mixed A value or array of values.
+     * @param array $arr
+     * @param mixed $value
      * @return bool
      */
     public static function contains($arr, $value)
