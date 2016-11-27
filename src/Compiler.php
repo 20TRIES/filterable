@@ -53,7 +53,7 @@ class Compiler
                 $input_keys = array_unique($params);
 
                 $configurations[$key][] = function ($query, ...$input) use ($set, $input_keys) {
-                    return $this->adaptor->adaptSet($set, array_filter(array_combine($input_keys, $input)), $query);
+                    return $this->adaptor->adaptSet($this->compile($set), array_filter(array_combine($input_keys, $input)), $query);
                 };
                 foreach ($input_keys as $name) {
                     $configurations[$key][] = new Param($name);
@@ -87,6 +87,9 @@ class Compiler
                         $param = $param === 'true';
                     } else {
                         $param = new Param($param);
+                        if (!in_array($param->name(), $name_params)) {
+                            throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
+                        }
                     }
                     $parsed_configurations[$parsed_key][] = $param;
                 }

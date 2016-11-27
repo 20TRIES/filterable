@@ -2,8 +2,6 @@
 
 namespace _20TRIES\Filterable;
 
-use _20TRIES\Filterable\Exceptions\InvalidConfigurationException;
-
 /**
  * Adapts user input to securely build a query.
  *
@@ -12,115 +10,37 @@ use _20TRIES\Filterable\Exceptions\InvalidConfigurationException;
 class Adaptor
 {
     /**
-     * Handles the adaption.
+     * Handles the adaption of a full configuration.
      *
-     * @param array $configuration
+     * @param array $configs
      * @param array $input
      * @param mixed $query
      * @return mixed
      */
-    public function adapt($configuration, $input, $query)
+    public function adapt($configs, $input, $query)
     {
-        foreach ($this->parseConfiguration($configuration, $input) as $filter_key => $configuration) {
-            $method = $configuration[0];
-            $params = (new Arr($input))->only(array_slice($configuration, 1));
-            $query = $method($query, ...$params);
+        foreach ($configs as $filter_key => $configuration) {
+            $query = $this->adaptSet([$filter_key => $configuration], $input, $query);
         }
         return $query;
     }
 
+    /**
+     * Handles the adaption of a single configuration set.
+     *
+     * @param array $set
+     * @param array $input
+     * @param mixed $query
+     * @return mixed
+     */
     public function adaptSet($set, $input, $query)
     {
-        $compiler = new Compiler;
-
-        $compiled = $compiler->compile($set);
-
-        $config = $this->filterConfigToInput($compiled, $input);
-
-        $configuration_item = null;
-
-        foreach ($config as $configuration_item) {
-            break;
-        }
-
-        $method = $configuration_item[0];
-
-        $params = (new Arr($input))->only(array_slice($configuration_item, 1));
-
-        return $method($query, ...$params);
-    }
-
-    protected function filterConfigToInput($configurations, $input)
-    {
-        $all_input_keys = (new Arr($input))->keys();
-        $parsed_configurations = [];
-
-        foreach ($configurations as $key => $configuration) {
-            // Skip empty configurations.
-            if (empty($configuration)) {
-                continue;
-            }
-
-            if (! is_numeric($key)) {
-                // If the request params do not match the params provided in the filter key; continue.
-                $name_params = array_filter(explode(',', $key));
-                $intersection = array_intersect($all_input_keys, $name_params);
-                sort($intersection);
-                if ($intersection != $name_params) {
-                    continue;
-                }
-
-                foreach (array_slice($configuration, 1) as $param) {
-                    if ($param instanceof Param && !in_array($param->name(), $name_params)) {
-                        throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
-                    }
-                }
-            }
-
-            $parsed_configurations[$key] = $configuration;
-        }
-
-        return $parsed_configurations;
-    }
-
-    /**
-     * Parses a set of configuration rules.
-     *
-     * @param array $raw_configurations
-     * @return array
-     * @throws InvalidConfigurationException
-     */
-    public function parseConfiguration($raw_configurations, $input)
-    {
-        $configurations = (new Compiler($this))->compile($raw_configurations);
-        $all_input_keys = (new Arr($input))->keys();
-        $parsed_configurations = [];
-
-        foreach ($configurations as $key => $configuration) {
-            // Skip empty configurations.
-            if (empty($configuration)) {
-                continue;
-            }
-
-            if (! is_numeric($key)) {
-                // If the request params do not match the params provided in the filter key; continue.
-                $name_params = array_filter(explode(',', $key));
-                $intersection = array_intersect($all_input_keys, $name_params);
-                sort($intersection);
-                if ($intersection != $name_params) {
-                    continue;
-                }
-
-                foreach (array_slice($configuration, 1) as $param) {
-                    if ($param instanceof Param && !in_array($param->name(), $name_params)) {
-                        throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
-                    }
-                }
-            }
-
-            $parsed_configurations[$key] = $configuration;
-        }
-
-        return $parsed_configurations;
+        $config = Arr::first($set, function ($value, $key) use ($input) {
+            $params = array_filter(explode(',', $key));
+            return !is_null($value) && (is_numeric($key) || Arr::contains($input, $params));
+        });
+        $method = Arr::first($config);
+        $params = Arr::only($input, Arr::tail($config));
+        return is_callable($method) ? $method($query, ...$params) : $query;
     }
 }

@@ -1,8 +1,9 @@
 <?php
 
-namespace _20TRIES\Test\RequestToQueryAdaptor;
+namespace _20TRIES\Test;
 
 use _20TRIES\Filterable\Adaptor;
+use _20TRIES\Filterable\Compiler;
 use _20TRIES\Filterable\Param;
 use PHPUnit_Framework_TestCase;
 
@@ -18,7 +19,8 @@ class ExamplesTest extends PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('orderBy')->with('rating', 'desc')->willReturnSelf();
-        (new Adaptor())->adapt([
+
+        $config = [
             'order' => [function($query, $ordering) {
                 switch($ordering) {
                     case "highest-rated":
@@ -29,7 +31,13 @@ class ExamplesTest extends PHPUnit_Framework_TestCase
                 };
                 return $query;
             }, new Param('order')],
-        ], ['order' => 'highest-rated'], $query);
+        ];
+
+        $compiled = (new Compiler())->compile($config);
+
+        $input = ['order' => 'highest-rated'];
+
+        (new Adaptor())->adapt($compiled, $input, $query);
     }
 
     /**
@@ -42,9 +50,16 @@ class ExamplesTest extends PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('customPaginate')->with(10, 50)->willReturnSelf();
-        (new Adaptor())->adapt([
+
+        $config = [
             'page,limit' => 'customPaginate(page, limit)',
-        ], ['page' => 10, 'limit' => 50], $query);
+        ];
+
+        $compiled = (new Compiler())->compile($config);
+
+        $input = ['page' => 10, 'limit' => 50];
+
+        (new Adaptor())->adapt($compiled, $input, $query);
     }
 
     /**
@@ -57,14 +72,17 @@ class ExamplesTest extends PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('customPaginate')->with(10, 15)->willReturnSelf();
-        (new Adaptor())->adapt([
+        $config = [
             [
                 'page,limit' => 'customPaginate(page, limit)',
                 'page'       => 'customPaginate(page, 15)',
                 'limit'      => 'customPaginate(1, limit)',
                 ''           => 'customPaginate(1, 15)',
             ]
-        ], ['page' => 10], $query);
+        ];
+        $compiled = (new Compiler())->compile($config);
+        $input = ['page' => 10];
+        (new Adaptor())->adapt($compiled, $input, $query);
     }
 
     /**
@@ -77,11 +95,14 @@ class ExamplesTest extends PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $query->expects($this->once())->method('customPaginate')->with(10, 15)->willReturnSelf();
-        (new Adaptor())->adapt([
+        $config = [
             [
                 'page' => 'customPaginate(page, 15)',
                 ''     => 'customPaginate(1, 15)',
             ]
-        ], ['page' => 10, 'limit' => 999999999], $query);
+        ];
+        $compiled = (new Compiler())->compile($config);
+        $input = ['page' => 10, 'limit' => 999999999];
+        (new Adaptor())->adapt($compiled, $input, $query);
     }
 }

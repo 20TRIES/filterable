@@ -1,22 +1,22 @@
 <?php
 
-namespace _20TRIES\Test\RequestToQueryAdaptor;
+namespace _20TRIES\Test\Compiler;
 
-use _20TRIES\Filterable\Adaptor;
+use _20TRIES\Filterable\Compiler;
 use _20TRIES\Filterable\Param;
 use Closure;
 use PHPUnit_Framework_TestCase;
 
-class StringConfigurationTest extends PHPUnit_Framework_TestCase
+class StringTest extends PHPUnit_Framework_TestCase
 {
     public function test_that_string_config_a() {
-        $configurations = (new Adaptor())->parseConfiguration([
+        $config = [
             'bar' => 'barScope'
-        ], ['bar' => []]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        ];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(1, count($configuration));
@@ -27,11 +27,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_a_2() {
-        $configurations = (new Adaptor())->parseConfiguration(['bar' => 'barScope()'], ['bar' => 'foo']);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['bar' => 'barScope()'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(1, count($configuration));
@@ -42,11 +42,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_b() {
-        $configurations = (new Adaptor())->parseConfiguration(['bar' => 'barScope(bar)'], ['bar' => 25]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['bar' => 'barScope(bar)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(2, count($configuration));
@@ -65,17 +65,18 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
      * @expectedExceptionMessage Scope parameters must be included within the configuration key
      */
     public function test_that_string_config_c() {
-        $configurations = (new Adaptor())->parseConfiguration(['bar' => 'barScope(foo)'], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertEmpty($configurations);
+        $config = ['bar' => 'barScope(foo)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertEmpty($compiled);
     }
 
     public function test_that_string_config_d() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(foo,bar)'], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => 'barScope(foo,bar)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -94,11 +95,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_e() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(bar,foo)'], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => 'barScope(bar,foo)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -121,20 +122,21 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
      * @expectedExceptionMessage Duplicated filter
      */
     public function test_that_string_config_f() {
-        $configurations = (new Adaptor())->parseConfiguration([
+        $config = [
             'foo,bar' => 'barScope(bar,foo)',
             'bar,foo' => 'barScope(bar,foo)',
-        ], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertEquals(count($configurations), 1);
+        ];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertEquals(count($compiled), 1);
     }
 
     public function test_that_string_config_g() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(25,bar)'], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => 'barScope(25,bar)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -153,11 +155,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_h() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(bar, 25)'], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => 'barScope(bar, 25)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -175,11 +177,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_i() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(25.1,bar)'], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => 'barScope(25.1,bar)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -198,11 +200,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_j() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope(25,bar)'], ['bar' => 25, 'foo' => 30, '25' => 35]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => 'barScope(25,bar)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -221,11 +223,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_k() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => 'barScope("25",bar)'], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => 'barScope("25",bar)'];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -244,11 +246,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_l() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => "barScope('hello',bar)"], ['bar' => 25, 'foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => "barScope('hello',bar)"];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -267,11 +269,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_m() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo,bar' => "barScope('hello',bar)"], ['bar' => 25, 'foo' => 30, 'hello' => 35]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo,bar' => "barScope('hello',bar)"];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('bar,foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(3, count($configuration));
@@ -289,24 +291,12 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    public function test_scope_attributes_are_passed_to_model_method() {
-        $query = $this
-            ->getMockBuilder('MockClass')
-            ->setMethods(['barScope'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $query->expects($this->once())->method('barScope')->with('baz', 35)->willReturnSelf();
-        (new Adaptor())->adapt([
-            'bar' => 'barScope(bar, 35)'
-        ], ['bar' => 'baz'], $query);
-    }
-
     public function test_that_string_config_n() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo' => "barScope(true)"], ['foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo' => "barScope(true)"];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(2, count($configuration));
@@ -321,11 +311,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_o() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo' => "barScope(false)"], ['foo' => 30]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo' => "barScope(false)"];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(2, count($configuration));
@@ -340,11 +330,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_p() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo' => "barScope(false)"], ['foo' => 30, 'true' => 40]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo' => "barScope(false)"];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('foo', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(2, count($configuration));
@@ -359,10 +349,11 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
     }
 
     public function test_that_string_config_q() {
-        $configurations = (new Adaptor())->parseConfiguration(['foo.bar' => "barScope(foo.bar)"], ['foo' => ['bar' => 1, 'baz' => 2]]);
-        $this->assertInternalType('array', $configurations);
-        $this->assertNotEmpty($configurations);
-        foreach ($configurations as $filter => $configuration) {
+        $config = ['foo.bar' => "barScope(foo.bar)"];
+        $compiled = (new Compiler)->compile($config);
+        $this->assertInternalType('array', $compiled);
+        $this->assertNotEmpty($compiled);
+        foreach ($compiled as $filter => $configuration) {
             $this->assertEquals('foo.bar', $filter);
             $this->assertInternalType('array', $configuration);
             $this->assertEquals(2, count($configuration));
@@ -374,5 +365,36 @@ class StringConfigurationTest extends PHPUnit_Framework_TestCase
             $this->assertInstanceOf(Param::class, $configuration[1]);
             $this->assertAttributeEquals('foo.bar', 'name', $configuration[1]);
         }
+    }
+
+    public function test_that_configuration_set_compiles_to_optimal() {
+        $configurations = [
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+                'page'       => 'customPaginate(page, 15)',
+                'limit'      => 'customPaginate(1, limit)',
+                ''           => 'customPaginate(1, 15)',
+            ]
+        ];
+        $adaptor = $this->getMockBuilder('foo')->setMethods(['adaptSet'])->getMock();
+        $adaptor->expects($this->once())->method('adaptSet')->with();
+        $compiler = new Compiler($adaptor);
+        $compiled = $compiler->compile($configurations);
+
+        $this->assertInternalType('array', $compiled);
+
+        $this->assertEquals(1, count($compiled));
+
+        $this->assertEquals(3, count($compiled[0]));
+
+        $this->assertInstanceOf(Closure::class, $compiled[0][0]);
+        $query = new \stdClass();
+        $compiled[0][0]($query, 1, 50);
+
+        $this->assertInstanceOf(Param::class, $compiled[0][1]);
+        $this->assertAttributeEquals('page', 'name', $compiled[0][1]);
+
+        $this->assertInstanceOf(Param::class, $compiled[0][2]);
+        $this->assertAttributeEquals('limit', 'name', $compiled[0][2]);
     }
 }

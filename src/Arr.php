@@ -5,14 +5,6 @@ namespace _20TRIES\Filterable;
 
 class Arr
 {
-    protected $items = [];
-
-
-    public function __construct($items = [])
-    {
-      $this->items = $items;
-    }
-
     /**
      * Gets a parameter from a request.
      *
@@ -20,11 +12,11 @@ class Arr
      * @param null $default
      * @return null
      */
-    public function get($parameter, $default = null)
+    public static function get($arr, $parameter, $default = null)
     {
         $components = array_filter(explode('.', trim($parameter)));
         $head = array_shift($components);
-        $input = array_key_exists($head, $this->items) ? $this->items[$head] : $default;
+        $input = array_key_exists($head, $arr) ? $arr[$head] : $default;
         if (! is_null($input)) {
             foreach ($components as $component) {
                 if (array_key_exists($component, $input)) {
@@ -43,12 +35,12 @@ class Arr
      * @param array $attributes
      * @return array
      */
-    public function only($attributes)
+    public static function only($arr, $attributes)
     {
         $data = [];
         foreach ($attributes as $parameter) {
             $data[] = $parameter instanceof Param
-                ? $this->get($parameter->name())
+                ? self::get($arr, $parameter->name())
                 : $parameter;
         }
         return $data;
@@ -59,9 +51,9 @@ class Arr
      *
      * @return array
      */
-    public function keys() {
+    public static function keys($arr) {
         $keys = [];
-        $sub_arrs = [['append' => '', 'data' => $this->items]];
+        $sub_arrs = [['append' => '', 'data' => $arr]];
         while(! empty($sub_arrs)) {
             $sub_arr = array_pop($sub_arrs);
             foreach ($sub_arr['data'] as $key => $value) {
@@ -76,5 +68,43 @@ class Arr
             }
         }
         return $keys;
+    }
+
+
+    /**
+     * Determines whether an array contains a value(s).
+     *
+     * @param mixed A value or array of values.
+     * @return bool
+     */
+    public static function contains($arr, $value) {
+        $values = is_array($value) ? $value : [$value];
+        $intersection = array_intersect(array_keys($arr), $values);
+        sort($intersection);
+        return $intersection == $values;
+    }
+
+    public static function filter($arr, $callback)
+    {
+        return array_filter($arr, $callback, ARRAY_FILTER_USE_BOTH);
+    }
+
+    /**
+     * @param array $arr
+     * @param null|callable $callback
+     * @return mixed
+     */
+    public static function first($arr, $callback = null) {
+        $item = null;
+        foreach ($arr as $key => $item) {
+            if (is_null($callback) || $callback($item, $key) === true) {
+                break;
+            }
+        }
+        return $item;
+    }
+
+    public static function tail($arr) {
+        return array_slice($arr, 1);
     }
 }
