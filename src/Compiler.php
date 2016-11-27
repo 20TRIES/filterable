@@ -38,70 +38,75 @@ class Compiler
      */
     public function compile($configs)
     {
-        // Compile configuration sets.
-        foreach($configs as $key => $configuration) {
+        $parsed_configs = [];
+        foreach($configs as $key => $config) {
             if (is_numeric($key)) {
-                $configs[$key] = $this->wrapFilterSet($configuration, $configs);
-            }
-        }
-
-        $parsed_configurations = [];
-        foreach ($configs as $key => $configuration) {
-            $name_params = array_filter(explode(',', $key));
-            sort($name_params);
-            $parsed_key = trim(implode(',', $name_params));
-            if (array_key_exists($parsed_key, $parsed_configurations)) {
-                throw new InvalidConfigurationException('Duplicated configuration item');
-            }
-
-            if (is_string($configuration)) {
-                $parsed_configurations[$parsed_key] = [];
-                $method = preg_replace('/[^(]*\K.*/si', '', $configuration);
-                $params = array_filter(explode(',', preg_replace('/^[^(]*\({0,}|\)$/si', '', $configuration)));
-                $parsed_configurations[$parsed_key][] = function ($query, ...$params) use ($method) {
-                    return $query->$method(...$params);
-                };
-                foreach ($params as $key => $param) {
-                    $param = trim($param);
-                    if (in_array(substr($param, 0, 1), ['"', '\''])) {
-                        $param = substr($param, 1, -1);
-                    } elseif (is_numeric($param)) {
-                        $param = ((float)$param - (int)$param) > 0 ? (float)$param : (int)$param;
-                    } elseif ($param === 'true' || $param === 'false') {
-                        $param = $param === 'true';
-                    } else {
-                        $param = new Param($param);
-                        if (!in_array($param->name(), $name_params)) {
-                            throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
-                        }
-                    }
-                    $parsed_configurations[$parsed_key][] = $param;
-                }
-            } elseif(is_callable($configuration)) {
-                $parsed_configurations[$parsed_key] = [$configuration];
-            } elseif(is_numeric($key)) {
-                $parsed_configurations[] = $configuration;
+                $parsed_configs[$key] = $this->wrapSet($this->compile($config), $parsed_configs);
             } else {
-                $parsed_configurations[$parsed_key] = $configuration;
+                $name_params = array_filter(explode(',', $key));
+                sort($name_params);
+                $parsed_key = trim(implode(',', $name_params));
+
+                if (is_string($config)) {
+                    $config = $this->parseConfigurationString($config, $name_params);
+                }
+                if (Arr::has($parsed_configs, $parsed_key)) {
+                    throw new InvalidConfigurationException('Duplicated configuration item');
+                }
+                $parsed_configs[$parsed_key] = is_callable($config) ? [$config] : $config;
             }
         }
 
         // Return compiled configuration filtered of any placeholders (null elements).
-        return array_filter($parsed_configurations);
+        return array_filter($parsed_configs);
     }
 
     /**
-     * Wraps a filter set into a compiled configuration item and generates placeholder items for sub-items within the
-     * set.
+     * Converts a configuration string into a valid configuration item.
+     *
+     * @param string $str
+     * @param array $available_params
+     * @return array
+     * @throws InvalidConfigurationException
+     */
+    protected function parseConfigurationString($str, $available_params)
+    {
+        $output = [];
+        $method = preg_replace('/[^(]*\K.*/si', '', $str);
+        $params = array_filter(explode(',', preg_replace('/^[^(]*\({0,}|\)$/si', '', $str)));
+        $output[] = function ($query, ...$params) use ($method) {
+            return $query->$method(...$params);
+        };
+        foreach ($params as $param) {
+            $param = trim($param);
+            if (in_array(substr($param, 0, 1), ['"', '\''])) {
+                $param = substr($param, 1, -1);
+            } elseif (is_numeric($param)) {
+                $param = ((float)$param - (int)$param) > 0 ? (float)$param : (int)$param;
+            } elseif ($param === 'true' || $param === 'false') {
+                $param = $param === 'true';
+            } else {
+                $param = new Param($param);
+                if (!in_array($param->name(), $available_params)) {
+                    throw new InvalidConfigurationException('Scope parameters must be included within the configuration key');
+                }
+            }
+            $output[] = $param;
+        }
+        return $output;
+    }
+
+    /**
+     * Wraps a compiled configuration set into a compiled configuration item and generates placeholder items for
+     * sub-items within the set.
      *
      * @param array $set
      * @param array $configs
      * @return array
      * @throws InvalidConfigurationException
      */
-    protected function wrapFilterSet($set, &$configs)
+    protected function wrapSet($set, &$configs)
     {
-        $compiled_set = $this->compile($set);
         $wrapped_set = [];
         $params = [];
 
@@ -121,12 +126,12 @@ class Compiler
 
         // Add callback to wrapper configuration item
         $input_keys = array_unique($params);
-        $wrapped_set[] = function ($query, ...$input) use ($compiled_set, $input_keys) {
+        $wrapped_set[] = function ($query, ...$input) use ($set, $input_keys) {
             // Combine input keys with input provided via parameters.
             $input = array_combine($input_keys, $input);
 
             // Adapt the query using the compiled configuration set.
-            return $this->adaptor->adaptSet($compiled_set, array_filter($input), $query);
+            return $this->adaptor->adaptSet($set, array_filter($input), $query);
         };
 
         // Add parameters to wrapper configuration item

@@ -390,10 +390,10 @@ class StringTest extends PHPUnit_Framework_TestCase
         $compiled[0][0]($query, 1, 50);
 
         $this->assertInstanceOf(Param::class, $compiled[0][1]);
-        $this->assertAttributeEquals('page', 'name', $compiled[0][1]);
+        $this->assertAttributeEquals('limit', 'name', $compiled[0][1]);
 
         $this->assertInstanceOf(Param::class, $compiled[0][2]);
-        $this->assertAttributeEquals('limit', 'name', $compiled[0][2]);
+        $this->assertAttributeEquals('page', 'name', $compiled[0][2]);
     }
 
     /**
