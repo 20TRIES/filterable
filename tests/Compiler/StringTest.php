@@ -1,6 +1,4 @@
-<?php
-
-namespace _20TRIES\Test\Compiler;
+<?php namespace _20TRIES\Test\Compiler;
 
 use _20TRIES\Filterable\Compiler;
 use _20TRIES\Filterable\Param;

@@ -1,6 +1,4 @@
-<?php
-
-namespace _20TRIES\Filterable;
+<?php namespace _20TRIES\Filterable;
 
 /**
  * Adapts user input to securely build a query.

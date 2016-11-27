@@ -1,16 +1,19 @@
-<?php
+<?php namespace _20TRIES\Filterable;
 
-namespace _20TRIES\Filterable;
-
-
+/**
+ * Helper class for interacting with arrays in a simple and clean way.
+ *
+ * @package _20TRIES\Filterable
+ */
 class Arr
 {
     /**
      * Gets a parameter from a request.
      *
+     * @param array $arr
      * @param string $parameter
      * @param null $default
-     * @return null
+     * @return mixed
      */
     public static function get($arr, $parameter, $default = null)
     {
@@ -32,6 +35,7 @@ class Arr
     /**
      * Gets a set of attribute from an array using "dot notation".
      *
+     * @param array $arr
      * @param array $attributes
      * @return array
      */
@@ -51,7 +55,8 @@ class Arr
      *
      * @return array
      */
-    public static function keys($arr) {
+    public static function keys($arr)
+    {
         $keys = [];
         $sub_arrs = [['append' => '', 'data' => $arr]];
         while(! empty($sub_arrs)) {
@@ -70,31 +75,42 @@ class Arr
         return $keys;
     }
 
-
     /**
      * Determines whether an array contains a value(s).
      *
      * @param mixed A value or array of values.
      * @return bool
      */
-    public static function contains($arr, $value) {
+    public static function contains($arr, $value)
+    {
         $values = is_array($value) ? $value : [$value];
         $intersection = array_intersect(array_keys($arr), $values);
         sort($intersection);
         return $intersection == $values;
     }
 
+    /**
+     * Filters an array with a given callback.
+     *
+     * @param array $arr
+     * @param callable $callback
+     * @return array
+     */
     public static function filter($arr, $callback)
     {
         return array_filter($arr, $callback, ARRAY_FILTER_USE_BOTH);
     }
 
     /**
+     * Gets the first element from an array.
+     *
      * @param array $arr
-     * @param null|callable $callback
+     * @param null|callable $callback An optional callback that can be provided that must return true before an element
+     * is returned; takes the value and then the key of each element in the array.
      * @return mixed
      */
-    public static function first($arr, $callback = null) {
+    public static function first($arr, $callback = null)
+    {
         $item = null;
         foreach ($arr as $key => $item) {
             if (is_null($callback) || $callback($item, $key) === true) {
@@ -104,7 +120,25 @@ class Arr
         return $item;
     }
 
-    public static function tail($arr) {
+    /**
+     * Gets the first element from an array.
+     *
+     * @param array $arr
+     * @return array|null
+     */
+    public function head($arr)
+    {
+        return self::first($arr);
+    }
+
+    /**
+     * Gets an array minus the first element.
+     *
+     * @param array $arr
+     * @return array
+     */
+    public static function tail($arr)
+    {
         return array_slice($arr, 1);
     }
 }

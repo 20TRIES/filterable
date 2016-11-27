@@ -1,20 +1,36 @@
-<?php
-
-namespace _20TRIES\Filterable;
-
+<?php namespace _20TRIES\Filterable;
 
 use _20TRIES\Filterable\Exceptions\InvalidConfigurationException;
 
+/**
+ * Compiler for filterable configuration sets.
+ *
+ * @package _20TRIES\Filterable
+ */
 class Compiler
 {
-
+    /**
+     * @var Adaptor|null
+     */
     protected $adaptor;
 
+    /**
+     * Constructor.
+     *
+     * @param null $adaptor
+     */
     public function __construct($adaptor = null)
     {
         $this->adaptor = is_null($adaptor) ? new Adaptor : $adaptor;
     }
 
+    /**
+     * Compiles array of configuration sets.
+     *
+     * @param $configurations
+     * @return array
+     * @throws InvalidConfigurationException
+     */
     public function compile($configurations)
     {
 

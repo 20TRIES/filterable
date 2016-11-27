@@ -1,6 +1,4 @@
-<?php
-
-namespace _20TRIES\Filterable;
+<?php namespace _20TRIES\Filterable;
 
 /**
  * Placeholder that represents a request parameter.

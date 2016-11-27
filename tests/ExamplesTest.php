@@ -1,6 +1,4 @@
-<?php
-
-namespace _20TRIES\Test;
+<?php namespace _20TRIES\Test;
 
 use _20TRIES\Filterable\Adaptor;
 use _20TRIES\Filterable\Compiler;
