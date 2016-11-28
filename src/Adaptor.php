@@ -38,7 +38,10 @@ class Adaptor
             return !is_null($value) && (is_numeric($key) || Arr::contains($input, $params));
         });
         $method = Arr::first($config);
-        $params = Arr::only($input, Arr::tail($config));
+        $params = [];
+        foreach (Arr::tail($config) as $param) {
+            $params[] = $param instanceof Param ? Arr::get($input, $param->name()) : $param;
+        }
         return is_callable($method) ? $method($query, ...$params) : $query;
     }
 }

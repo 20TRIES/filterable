@@ -13,63 +13,62 @@ class Arr
      * Gets a parameter from a request.
      *
      * @param array $arr
-     * @param string $parameter
-     * @param null $default
-     * @return mixed
+     * @param string $key
+     * @param mixed $default
+     * @return null
      */
-    public static function get($arr, $parameter, $default = null)
+    public static function get($arr, $key, $default = null)
     {
-        $components = array_filter(explode('.', trim($parameter)));
-        $head = array_shift($components);
-        $input = array_key_exists($head, $arr) ? $arr[$head] : $default;
-        if (! is_null($input)) {
-            foreach ($components as $component) {
-                if (array_key_exists($component, $input)) {
-                    $input = $input[$component];
-                } else {
-                    return $default;
-                }
-            }
-        }
-        return $input;
+        self::has($arr, $key, $default);
+        return $default;
     }
 
     /**
      * Determines whether an array has a given key.
      *
      * @param array $arr
-     * @param string $key
+     * @param string|int $key
+     * @param mixed $value
      * @return bool
      */
-    public static function has($arr, $key)
+    public static function has($arr, $key, &$value = null)
     {
-        $components = array_filter(explode('.', trim($key)));
-        foreach ($components as $component) {
-            if (array_key_exists(trim($component), $arr)) {
-                $arr = $arr[$component];
-            } else {
+        foreach ($components = self::splitKey($key) as $component) {
+            if (! array_key_exists($component, $arr)) {
                 return false;
             }
+            $arr = $arr[$component];
         }
-        return ! empty($components);
+        if (! empty($components)) {
+            $value = $arr;
+            return true;
+        }
+        return false;
     }
 
     /**
-     * Gets a set of attribute from an array using "dot notation".
+     * Splits a key into its components for "dot notation".
      *
-     * @param array $arr
-     * @param array $attributes
+     * @param string|int $key
      * @return array
      */
-    public static function only($arr, $attributes)
+    protected static function splitKey($key)
     {
-        $data = [];
-        foreach ($attributes as $parameter) {
-            $data[] = $parameter instanceof Param
-                ? self::get($arr, $parameter->name())
-                : $parameter;
-        }
-        return $data;
+        return is_string($key) ? explode('.', trim($key)) : [$key];
+    }
+
+    /**
+     * Gets a set of attributes from an array.
+     *
+     * The is method does not support "dot notation".
+     *
+     * @param array $arr
+     * @param array $keys
+     * @return array
+     */
+    public static function only($arr, $keys)
+    {
+        return array_intersect_key($arr, array_flip($keys));
     }
 
     /**

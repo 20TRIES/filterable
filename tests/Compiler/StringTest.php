@@ -416,6 +416,22 @@ class StringTest extends PHPUnit_Framework_TestCase
      * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
      * @expectedExceptionMessage Duplicated configuration item
      */
+    public function test_that_configuration_sets_trigger_duplicate_exceptions_with_non_sets_when_ordered() {
+        $config = [
+            'limit,page' => 'fooBar()',
+            [
+                'page,limit' => 'customPaginate(page, limit)',
+                'page'       => 'customPaginate(page, 15)',
+                'limit'      => 'customPaginate(1, limit)',
+            ],
+        ];
+        (new Compiler)->compile($config);
+    }
+
+    /**
+     * @expectedException \_20TRIES\Filterable\Exceptions\InvalidConfigurationException
+     * @expectedExceptionMessage Duplicated configuration item
+     */
     public function test_that_configuration_sets_trigger_duplicate_exceptions_with_sets() {
         $config = [
             [
