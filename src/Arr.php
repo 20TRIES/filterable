@@ -72,7 +72,10 @@ class Arr
     }
 
     /**
-     * Gets the keys available in a "dot notation" array.
+     * Gets the keys available in an array.
+     *
+     * - Ordering of keys sis not guaranteed to be maintained.
+     * - Supports "dot notation".
      *
      * @param array $arr
      * @return array
@@ -80,21 +83,31 @@ class Arr
     public static function keys($arr)
     {
         $keys = [];
-        $sub_arrs = [['append' => '', 'data' => $arr]];
-        while(! empty($sub_arrs)) {
-            $sub_arr = array_pop($sub_arrs);
+        $sub_sets = [['append' => '', 'data' => $arr]];
+        while(! empty($sub_sets)) {
+            $sub_arr = array_pop($sub_sets);
             foreach ($sub_arr['data'] as $key => $value) {
                 if (is_array($value) && !empty($value)) {
-                    $sub_arrs[] = [
+                    $sub_sets[] = [
                         'append' => implode('.', array_filter([trim($sub_arr['append']), trim($key)])),
                         'data'   => $value,
                     ];
                 } else {
-                    $keys[] = implode('.', array_filter([trim($sub_arr['append']), trim($key)]));
+                    $key_components = [];
+                    $append = trim($sub_arr['append']);
+                    if ($append !== '') {
+                        $key_components[] = $append;
+                    }
+                    $key = is_int($key) ? $key : trim($key);
+                    if ($key !== '') {
+                        $key_components[] = $key;
+                    }
+                    $keys[] = implode('.', $key_components);
                 }
             }
         }
         return $keys;
+
     }
 
     /**
