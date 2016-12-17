@@ -47,20 +47,19 @@ class Arr
     }
 
     /**
-     * Splits a key into its components for "dot notation".
+     * Determines whether an array has all given keys.
      *
-     * @param string|int $key
-     * @return array
+     * @param array $arr
+     * @param mixed $keys
+     * @return bool
      */
-    protected static function splitKey($key)
+    public static function hasAll($arr, $keys)
     {
-        return is_string($key) ? explode('.', trim($key)) : [$key];
+        return empty(array_diff(self::keys($arr), is_array($keys) ? $keys : [$keys]));
     }
 
     /**
      * Gets a set of attributes from an array.
-     *
-     * The is method does not support "dot notation".
      *
      * @param array $arr
      * @param array $keys
@@ -74,55 +73,86 @@ class Arr
     /**
      * Gets the keys available in an array.
      *
-     * - Ordering of keys sis not guaranteed to be maintained.
-     * - Supports "dot notation".
-     *
      * @param array $arr
      * @return array
      */
     public static function keys($arr)
     {
-        $keys = [];
-        $sub_sets = [['append' => '', 'data' => $arr]];
-        while(! empty($sub_sets)) {
-            $sub_arr = array_pop($sub_sets);
-            foreach ($sub_arr['data'] as $key => $value) {
-                if (is_array($value) && !empty($value)) {
-                    $sub_sets[] = [
-                        'append' => implode('.', array_filter([trim($sub_arr['append']), trim($key)])),
-                        'data'   => $value,
-                    ];
-                } else {
-                    $key_components = [];
-                    $append = trim($sub_arr['append']);
-                    if ($append !== '') {
-                        $key_components[] = $append;
-                    }
-                    $key = is_int($key) ? $key : trim($key);
-                    if ($key !== '') {
-                        $key_components[] = $key;
-                    }
-                    $keys[] = implode('.', $key_components);
-                }
-            }
-        }
-        return $keys;
-
+        $output = [];
+        self::traverse($arr, function ($item, $key) use (&$output) {
+            $output[] = $key;
+        });
+        return $output;
     }
 
     /**
-     * Determines whether an array contains a value(s).
+     * Traverses each item of a multidimensional array.
      *
      * @param array $arr
-     * @param mixed $value
-     * @return bool
+     * @param callable $callback
+     * @return array
      */
-    public static function contains($arr, $value)
+    protected static function traverse($arr, $callback)
     {
-        $values = is_array($value) ? $value : [$value];
-        $intersection = array_intersect(array_keys($arr), $values);
-        sort($intersection);
-        return $intersection == $values;
+        $sets = [['append' => '', 'items' => $arr]];
+        $output = [];
+        Arr::reduce($sets, function ($sub_arr) use (&$sets, &$output, $callback) {
+            Arr::reduce($sub_arr['items'], function ($value, $local_key) use (&$sets, &$output, $callback, $sub_arr) {
+                $full_key = Arr::buildKey($sub_arr['append'], $local_key);
+                if (is_array($value) && !empty($value)) {
+                    array_push($sets,
+                        ['append' => $sub_arr['append'], 'items'  => $sub_arr['items']],
+                        ['append' => $full_key, 'items' => $value]
+                    );
+                    return false;
+                }
+                $output[] = $callback($value, $full_key);
+            });
+        });
+        return $output;
+    }
+
+    /**
+     * Splits a key into its components for "dot notation".
+     *
+     * @param string|int $key
+     * @return array
+     */
+    protected static function splitKey($key)
+    {
+        return is_string($key) ? explode('.', trim($key)) : [$key];
+    }
+
+    /**
+     * Builds a dot notation style array key.
+     *
+     * @param array ...$components
+     * @return string
+     */
+    public static function buildKey(...$components)
+    {
+        return implode('.', Arr::filter($components, function ($item) {
+            return ! is_string($item) || trim($item) !== '';
+        }));
+    }
+
+    /**
+     * Iteratively reduce an array applying a callback function to each of the elements removed.
+     *
+     * @param array $arr
+     * @param callable $callback
+     * @return bool Returns true if all items were reduced, or false if reduction was halted early.
+     */
+    public static function reduce(&$arr, $callback)
+    {
+        while (! empty($arr)) {
+            end($arr);
+            $key = key($arr);
+            if($callback(array_pop($arr), $key) === false) {
+                return false;
+            };
+        }
+        return true;
     }
 
     /**

@@ -159,4 +159,52 @@ class ArrTest extends PHPUnit_Framework_TestCase
         $this->assertContains('foo.0', $result);
         $this->assertContains(0, $result);
     }
+
+    // @TODO test_hasAll
+
+//    public function test_hasAll_on_int()
+//    {
+//        Arr::hasAll(['foo' => ['bar' => ['baz' => 1]], 'foo-1', 'bar-1'], ['foo.bar.baz', 'bar', 'baz']);
+//        $this->assertTrue(Arr::hasAll(['foo', 'bar', 'baz'], 0));
+//    }
+
+    // @TODO test_buildKey
+
+    // @TODO test_reduce
+
+    // @TODO test_filter
+
+    // @TODO test_first
+
+    // @TODO test_head (test simple example as this just aliases the first method)
+
+    // @TODO test_fail (test simple example as this just aliases the array_slice method)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
