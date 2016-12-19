@@ -72,11 +72,8 @@ class Compiler
     protected function parseConfigurationString($str, $available_params)
     {
         $output = [];
-        $method = preg_replace('/[^(]*\K.*/si', '', $str);
         $params = array_filter(explode(',', preg_replace('/^[^(]*\({0,}|\)$/si', '', $str)));
-        $output[] = function ($query, ...$params) use ($method) {
-            return $query->$method(...$params);
-        };
+        $output[] = self::generateCallableScope(preg_replace('/[^(]*\K.*/si', '', $str));
         foreach ($params as $param) {
             $param = trim($param);
             if (in_array(substr($param, 0, 1), ['"', '\''])) {
@@ -94,6 +91,19 @@ class Compiler
             $output[] = $param;
         }
         return $output;
+    }
+
+    /**
+     * Generates a callable query scope using a given method name.
+     *
+     * @param string $method
+     * @return \Closure
+     */
+    public static function generateCallableScope($method)
+    {
+        return function ($query, ...$params) use ($method) {
+            return $query->$method(...$params);
+        };
     }
 
     /**
