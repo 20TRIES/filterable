@@ -165,6 +165,11 @@ class ArrTest extends PHPUnit_Framework_TestCase
         $this->assertFalse(Arr::hasAll([], ['foo', 'bar', 'baz']));
     }
 
+    public function test_hasAll_with_extra_data_in_arr()
+    {
+        $this->assertTrue(Arr::hasAll(['foo' => 1,'bar' => 2, 'baz' => 3], ['foo', 'bar']));
+    }
+
     // @TODO test_hasAll
 
 //    public function test_hasAll_on_int()
