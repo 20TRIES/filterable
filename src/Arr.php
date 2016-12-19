@@ -24,42 +24,37 @@ class Arr
     }
 
     /**
-     * Determines whether an array has a given key.
+     * Determines whether an array has a given set of keys.
      *
      * @param array $arr
-     * @param string|int $key
-     * @param mixed $value
+     * @param string|int|array $keys
+     * @param mixed $value The value of the given key if only a single key is provided.
      * @return bool
      */
-    public static function has($arr, $key, &$value = null)
+    public static function has($arr, $keys, &$value = null)
     {
-        foreach ($components = self::splitKey($key) as $component) {
-            if (! array_key_exists($component, $arr)) {
+        if (is_array($keys) && count($keys) > 1) {
+            // Determine whether $arr contains all keys in the $keys array
+            return empty(array_diff(is_array($keys) ? $keys : [$keys], self::keys($arr)));
+        } elseif(is_array($keys) && empty($arr)) {
+            // Only possible true result would be if $keys is and array and is empty.
+            return is_array($keys) && empty($keys);
+        } elseif(is_array($keys)) {
+            // If $keys only has one element, we will optimise it down to a string so that we can do a single key
+            // lookup.
+            $keys = self::head($keys);
+        }
+        foreach (self::splitKey($keys) as $key) {
+            if (is_array($arr) && array_key_exists($key, $arr)) {
+                $arr = $arr[$key];
+            } else {
                 return false;
             }
-            $arr = $arr[$component];
         }
-        if (! empty($components)) {
-            $value = $arr;
-            return true;
-        }
-        return false;
+        $value = $arr;
+        return true;
     }
 
-    /**
-     * Determines whether an array has all given keys.
-     *
-     * @param array $arr
-     * @param mixed $keys
-     * @return bool
-     */
-    public static function hasAll($arr, $keys)
-    {
-        if (empty($arr)) {
-            return empty($keys);
-        }
-        return empty(array_diff(is_array($keys) ? $keys : [$keys], self::keys($arr)));
-    }
 
     /**
      * Gets a set of attributes from an array.
@@ -123,7 +118,7 @@ class Arr
      */
     protected static function splitKey($key)
     {
-        return is_string($key) ? explode('.', trim($key)) : [$key];
+        return is_string($key) ? explode('.', $key) : [$key];
     }
 
     /**
@@ -135,7 +130,7 @@ class Arr
     public static function buildKey(...$components)
     {
         return implode('.', Arr::filter($components, function ($item) {
-            return ! is_string($item) || trim($item) !== '';
+            return ! is_string($item) || $item !== '';
         }));
     }
 
@@ -195,7 +190,7 @@ class Arr
      * @param array $arr
      * @return array|null
      */
-    public function head($arr)
+    public static function head($arr)
     {
         return self::first($arr);
     }

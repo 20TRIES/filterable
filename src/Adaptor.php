@@ -34,7 +34,7 @@ class Adaptor
     public function adaptSet($set, $input, $query)
     {
         $config = Arr::first($set, function ($value, $key) use ($input) {
-            return !is_null($value) && (is_numeric($key) || Arr::hasAll($input, array_filter(explode(',', $key))));
+            return !is_null($value) && (is_numeric($key) || Arr::has($input, array_filter(explode(',', $key))));
         });
         $method = Arr::first($config);
         $params = [];

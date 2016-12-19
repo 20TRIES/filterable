@@ -5,6 +5,34 @@ use PHPUnit_Framework_TestCase;
 
 class ArrTest extends PHPUnit_Framework_TestCase
 {
+    public function test_that_keys_are_not_trimmed()
+    {
+        $this->assertTrue(Arr::has([' ' => 1], ' '));
+        $this->assertFalse(Arr::has(['' => 1], ' '));
+        $this->assertTrue(Arr::has([' ' => ['  ' => 1]], ' .  '));
+    }
+
+    public function test_that_non_array_sub_element_is_handled () {
+
+        // Expects no exception
+        Arr::has(['a' => 1], 'a.b');
+    }
+
+    public function test_has_with_single_dot()
+    {
+        $this->assertTrue(Arr::has(['' => ['' => 1]], '.'));
+        $this->assertFalse(Arr::has(['' => 1], '.'));
+    }
+
+    public function test_has_with_empty_string()
+    {
+        $this->assertTrue(Arr::has(['' => 1], ''));
+        $this->assertFalse(Arr::has(['0' => 1], ''));
+        $this->assertFalse(Arr::has(['false' => 1], ''));
+        $this->assertFalse(Arr::has([0 => 1], ''));
+        $this->assertFalse(Arr::has([false => 1], ''));
+    }
+
     public function test_has_returns_false_when_key_is_empty_and_array_is_empty()
     {
         $this->assertFalse(Arr::has([], ''));
@@ -160,23 +188,30 @@ class ArrTest extends PHPUnit_Framework_TestCase
         $this->assertContains(0, $result);
     }
 
-    public function test_hasAll_with_empty_array()
+    // public function test_has_on_string
+
+    public function test_has_on_string()
     {
-        $this->assertFalse(Arr::hasAll([], ['foo', 'bar', 'baz']));
+        $this->assertTrue(Arr::has(['foo' => 1], ['foo']));
     }
 
-    public function test_hasAll_with_extra_data_in_arr()
+    // public function test_has_on_nested_int
+
+    // public function test_has_on_nested_string
+
+    // public function test_has_on_deeply_nested_int
+
+    // public function test_has_on_deeply_nested_string
+
+    public function test_has_with_empty_array()
     {
-        $this->assertTrue(Arr::hasAll(['foo' => 1,'bar' => 2, 'baz' => 3], ['foo', 'bar']));
+        $this->assertFalse(Arr::has([], ['foo', 'bar', 'baz']));
     }
 
-    // @TODO test_hasAll
-
-//    public function test_hasAll_on_int()
-//    {
-//        Arr::hasAll(['foo' => ['bar' => ['baz' => 1]], 'foo-1', 'bar-1'], ['foo.bar.baz', 'bar', 'baz']);
-//        $this->assertTrue(Arr::hasAll(['foo', 'bar', 'baz'], 0));
-//    }
+    public function test_has_with_extra_data_in_arr()
+    {
+        $this->assertTrue(Arr::has(['foo' => 1,'bar' => 2, 'baz' => 3], ['foo', 'bar']));
+    }
 
     // @TODO test_buildKey
 
