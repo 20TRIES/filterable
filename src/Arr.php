@@ -58,7 +58,7 @@ class Arr
         if (empty($arr)) {
             return empty($keys);
         }
-        return empty(array_diff(self::keys($arr), is_array($keys) ? $keys : [$keys])));
+        return empty(array_diff(self::keys($arr), is_array($keys) ? $keys : [$keys]));
     }
 
     /**
