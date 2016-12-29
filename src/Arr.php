@@ -122,7 +122,7 @@ class Arr
     }
 
     /**
-     * Builds a dot notation style array key.
+     * Builds a dot notation style array key from an array of component keys.
      *
      * @param array ...$components
      * @return string
