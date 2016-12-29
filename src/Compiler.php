@@ -1,5 +1,6 @@
 <?php namespace _20TRIES\Filterable;
 
+use _20TRIES\Arr\Arr;
 use _20TRIES\Filterable\Exceptions\InvalidConfigurationException;
 
 /**

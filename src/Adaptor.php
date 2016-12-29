@@ -1,5 +1,7 @@
 <?php namespace _20TRIES\Filterable;
 
+use _20TRIES\Arr\Arr;
+
 /**
  * Adapts user input to securely build a query.
  *
