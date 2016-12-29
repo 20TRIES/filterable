@@ -34,7 +34,7 @@ class Arr
     public static function has($arr, $keys, &$value = null)
     {
         if (is_array($keys) && count($keys) > 1) {
-            // Determine whether $arr contains all keys in the $keys array
+            // Check multiple keys are all present
             return empty(array_diff(is_array($keys) ? $keys : [$keys], self::keys($arr)));
         } elseif(is_array($keys) && empty($arr)) {
             // Only possible true result would be if $keys is and array and is empty.
