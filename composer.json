@@ -24,12 +24,6 @@
             "_20TRIES\\Test\\": "tests"
         }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/20TRIES/arr"
-        }
-    ],
     "scripts": {
         "test": "phpunit"
     },

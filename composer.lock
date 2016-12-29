@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a6d97c3ce52a2a8b4be4096c6f1863cb",
-    "content-hash": "9f046eee1a4aeb92cd89f22e7479e20c",
+    "hash": "f0a3d566f612b78df70a0358927dc1f2",
+    "content-hash": "0eda3501202e4c34192e1c4ec7c349d6",
     "packages": [
         {
             "name": "20tries/arr",
@@ -39,16 +39,7 @@
                     "_20TRIES\\Arr\\": "src"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "_20TRIES\\Test\\": "tests"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -60,10 +51,6 @@
                 "array helper",
                 "helper"
             ],
-            "support": {
-                "source": "https://github.com/20TRIES/Arr/tree/0.1.1",
-                "issues": "https://github.com/20TRIES/Arr/issues"
-            },
             "time": "2016-12-29 13:34:53"
         }
     ],
