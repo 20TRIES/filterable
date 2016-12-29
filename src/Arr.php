@@ -90,24 +90,53 @@ class Arr
      * @param callable $callback
      * @return array
      */
-    protected static function traverse($arr, $callback)
+    public static function traverse($arr, $callback)
     {
         $sets = [['append' => '', 'items' => $arr]];
-        $output = [];
-        Arr::reduce($sets, function ($sub_arr) use (&$sets, &$output, $callback) {
-            Arr::reduce($sub_arr['items'], function ($value, $local_key) use (&$sets, &$output, $callback, $sub_arr) {
+        $parameter_sets = [];
+        Arr::reduce($sets, function ($sub_arr) use (&$sets, &$output, &$parameter_sets) {
+            Arr::reduce($sub_arr['items'], function ($value, $local_key) use (&$sets, $sub_arr, &$parameter_sets) {
                 $full_key = Arr::buildKey($sub_arr['append'], $local_key);
-                if (is_array($value) && !empty($value)) {
-                    array_push($sets,
-                        ['append' => $sub_arr['append'], 'items'  => $sub_arr['items']],
-                        ['append' => $full_key, 'items' => $value]
+                if (is_array($value) && ! empty($value)) {
+                    array_push($sets, [
+                            'append' => $sub_arr['append'],
+                            'items'  => $sub_arr['items'],
+                        ], [
+                            'append' => $full_key,
+                            'items'  => $value,
+                            'after'  => function () use (&$parameter_sets, $value, $full_key) {
+                                $parameter_sets[] = [$value, $full_key];
+                            },
+                        ]
                     );
                     return false;
                 }
-                $output[] = $callback($value, $full_key);
+                $parameter_sets[] = [$value, $full_key];
             });
+            if (array_key_exists('after', $sub_arr) && is_callable($sub_arr['after'])) {
+                $sub_arr['after']();
+            }
         });
+        Arr::walk(array_reverse($parameter_sets), $callback, true);
         return $output;
+    }
+
+    /**
+     * Apply a user supplied function to every member of an array.
+     *
+     * @param array $arr
+     * @param callable $callback
+     * @param bool $unpack (optional) Unpacks sub-array elements as separate parameters.
+     */
+    public static function walk($arr, $callback, $unpack = false)
+    {
+        foreach($arr as $parameter_set) {
+            if ($unpack) {
+                $callback(...$parameter_set);
+            } else {
+                $callback($parameter_set);
+            }
+        }
     }
 
     /**
