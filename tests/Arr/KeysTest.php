@@ -13,29 +13,6 @@ class KeysTest extends PHPUnit_Framework_TestCase
         $this->assertContains(2, $result);
     }
 
-    // @TODO Leaf keys test
-//    public function test_multi_dimension_with_integer_keys()
-//    {
-//        $results = Arr::keys([0 => [1 => [2 => [4 => 5], 3 => 4]]]);
-//
-//        $this->assertCount(5, $results);
-//
-//        $this->assertArrayHasKey(0, $results);
-//        $this->assertEquals('0', $results[0]);
-//
-//        $this->assertArrayHasKey(1, $results);
-//        $this->assertEquals('0.1', $results[1]);
-//
-//        $this->assertArrayHasKey(2, $results);
-//        $this->assertEquals('0.1.2', $results[2]);
-//
-//        $this->assertArrayHasKey(3, $results);
-//        $this->assertEquals('0.1.2.4', $results[3]);
-//
-//        $this->assertArrayHasKey(4, $results);
-//        $this->assertEquals('0.1.3', $results[4]);
-//    }
-
     public function test_keys_on_empty_array()
     {
         $this->assertEmpty(Arr::keys([]));
