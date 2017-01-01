@@ -41,7 +41,16 @@ class Adaptor
         $method = Arr::first($config);
         $params = [];
         foreach (Arr::tail($config) as $param) {
-            $params[] = $param instanceof Param ? Arr::get($input, $param->name()) : $param;
+            if ($param instanceof Param) {
+                $param = new ParamSet($param->name());
+            }
+            if ($param instanceof ParamSet) {
+                foreach ($param->parameters() as $param) {
+                    $params[] = Arr::get($input, $param->name());
+                }
+            } else {
+                $params[] = $param;
+            }
         }
         return is_callable($method) ? $method($query, ...$params) : $query;
     }

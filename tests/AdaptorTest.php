@@ -3,6 +3,7 @@
 use _20TRIES\Filterable\Adaptor;
 use _20TRIES\Filterable\Compiler;
 use _20TRIES\Filterable\Param;
+use _20TRIES\Filterable\ParamSet;
 use PHPUnit_Framework_TestCase;
 
 class AdaptorTest extends PHPUnit_Framework_TestCase
@@ -78,6 +79,18 @@ class AdaptorTest extends PHPUnit_Framework_TestCase
             'page,limit' => [$scope_wrapper, new Param('page'), new Param('limit')],
             'limit'      => [$scope_wrapper, 1, new Param('limit')],
             ''           => [$scope_wrapper, 1, 15],
+        ];
+        (new Adaptor)->adaptSet($compiled, $input, $query);
+    }
+
+    public function test_array_config_with_parameter_set()
+    {
+        $input = ['page' => 2, 'limit' => 5];
+        $query = $this->getMockBuilder('MockObject')->setMethods(['customPaginate'])->getMock();
+        $query->expects($this->once())->method('customPaginate')->with(2, 5)->willReturnSelf();
+        $scope_wrapper = Compiler::generateCallableScope('customPaginate');
+        $compiled = [
+            'page,limit' => [$scope_wrapper, new ParamSet('page', 'limit')],
         ];
         (new Adaptor)->adaptSet($compiled, $input, $query);
     }
