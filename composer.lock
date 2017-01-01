@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f0a3d566f612b78df70a0358927dc1f2",
-    "content-hash": "0eda3501202e4c34192e1c4ec7c349d6",
+    "hash": "cce8ad99d06de7f117fd62dfb6d0b5b1",
+    "content-hash": "0eafdb9d5e2284f3780c4e4338a994f3",
     "packages": [
         {
             "name": "20tries/arr",
-            "version": "0.1.1",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/20TRIES/Arr.git",
-                "reference": "b421c47504ded72da927f565d740c1b0d2f61153"
+                "reference": "03a6040c7988f16e5cfef98c3626b96b9947cb00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/20TRIES/Arr/zipball/b421c47504ded72da927f565d740c1b0d2f61153",
-                "reference": "b421c47504ded72da927f565d740c1b0d2f61153",
+                "url": "https://api.github.com/repos/20TRIES/Arr/zipball/03a6040c7988f16e5cfef98c3626b96b9947cb00",
+                "reference": "03a6040c7988f16e5cfef98c3626b96b9947cb00",
                 "shasum": ""
             },
             "require": {
@@ -43,15 +43,18 @@
             "license": [
                 "MIT"
             ],
-            "description": "A package for aiding the handling of arrays.",
+            "description": "A package for aiding the handling of arrays using 'dot notation'",
             "homepage": "https://github.com/20tries/Arr",
             "keywords": [
                 "arr",
                 "array",
+                "array dot",
                 "array helper",
+                "dot",
+                "dot notation",
                 "helper"
             ],
-            "time": "2016-12-29 13:34:53"
+            "time": "2017-01-01 12:30:29"
         }
     ],
     "packages-dev": [
