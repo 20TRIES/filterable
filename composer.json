@@ -1,26 +1,18 @@
 {
     "name": "20tries/filterable",
-    "description": "A package for supporting the filtering of controller action results.",
+    "description": "A package to simplify the process of filtering controller / api results.",
     "keywords": [
-        "filter", "filterable", "laravel"
+        "filter", "filterable", "filtering", "request", "query", "api", "request-to-query"
     ],
     "homepage": "https://github.com/20tries/filterable",
     "license": "MIT",
     "require": {
         "php" : ">=5.6",
-        "nesbot/carbon": "1.*",
-        "20tries/date_range": "0.0.*",
-        "illuminate/support": "5.3.*",
-        "illuminate/contracts": "5.3.*",
-        "illuminate/http": "5.3.*",
-        "illuminate/pagination": "5.3.*"
+        "20tries/arr": "1.0.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "5.3.*",
-        "symfony/var-dumper": "3.0.*",
-        "symfony/debug": "3.0.*",
-        "illuminate/database": "5.3.*",
-        "mockery/mockery": "0.9.*"
+        "php" : ">=5.6",
+        "phpunit/phpunit": "5.6.*"
     },
     "autoload": {
         "psr-4": {
