@@ -37,7 +37,7 @@ class Adaptor
     {
         $config = Arr::first($set, function ($value, $key) use ($input) {
             return !is_null($value) && (is_numeric($key) || Arr::has($input, array_filter(explode(',', $key))));
-        });
+        }, []);
         $method = Arr::first($config);
         $params = [];
         foreach (Arr::tail($config) as $param) {

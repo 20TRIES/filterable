@@ -94,4 +94,17 @@ class AdaptorTest extends PHPUnit_Framework_TestCase
         ];
         (new Adaptor)->adaptSet($compiled, $input, $query);
     }
+
+    /**
+     * @test
+     */
+    public function adaptingSetReturnsQueryUnchangedWhenThereIsNoInput()
+    {
+        $input = [];
+        $query = $this->getMockBuilder('MockObject')->getMock();
+        $config = [
+            'page,limit' => [Compiler::generateCallableScope('customPaginate'), new ParamSet('page', 'limit')],
+        ];
+        (new Adaptor)->adaptSet($config, $input, $query);
+    }
 }
